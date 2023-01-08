@@ -196,7 +196,6 @@ class MainForm(ttk.Frame):
     def background_worker(self):
         try:
             bufsize = self.BUFFER_SIZE
-            # size = os.stat(self.arquivo.get()).st_size
             follow = False
 
             dest = self.copy_with_callback(self.arquivo.get(),
