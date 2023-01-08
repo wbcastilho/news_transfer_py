@@ -204,7 +204,7 @@ class MainForm(ttk.Frame):
                                            callback=None,
                                            buffer_size=bufsize,
                                            )
-            self.gerar_xml()
+            self.gerar_xml(self.configuration["servidor"], self.titulo.get(), self.arquivo.get())
             self.checar_ack(self.configuration["servidor"], self.titulo.get())
 
             if self.enviar:
@@ -286,22 +286,22 @@ class MainForm(ttk.Frame):
             if callback is not None:
                 callback(len(buf), copied, total)
 
-    def gerar_xml(self):
+    def gerar_xml(self, servidor, titulo, arquivo):
         try:
             self.set_progressbar_determinate(False)
             self.label_porcent["text"] = "Gerando arquivo xml..."
 
             dto = {
                 'codigo': MyRandom.gerar_codigo(),
-                'arquivo': self.titulo.get(),
-                'titulo': self.titulo.get(),
+                'arquivo': titulo,
+                'titulo': titulo,
                 'grupo': 'Editores',
                 'operador': 'Operador',
                 'markIn': '000',
-                'markOut': ConvertVideo.get_duration(self.arquivo.get()),
+                'markOut': ConvertVideo.get_duration(arquivo),
                 'remover': '0'
             }
-            VideoXML.create(caminho=self.configuration["servidor"], arquivo=f'{self.titulo.get()}.xml', dto=dto)
+            VideoXML.create(caminho=servidor, arquivo=f'{titulo}.xml', dto=dto)
         except Exception as ex:
             raise Exception(f"Falha ao gerar arquivo xml. {ex}")
 
