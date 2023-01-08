@@ -68,7 +68,7 @@ class SettingsForm(ttk.Frame):
     def on_browse(self):
         path = filedialog.askdirectory(initialdir=r'c:\\', title="Selecionar Pasta")
         if path:
-            self.local_configuration['servidor'] = path
+            self.local_configuration['servidor'].set(path)
 
     def on_cancel(self) -> None:
         self.master.destroy()
