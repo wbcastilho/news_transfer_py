@@ -30,7 +30,8 @@ class MainForm(ttk.Frame):
         super().__init__(*args, **kwargs)
         self.pack(fill=BOTH, expand=YES)
         self.configuration = {
-            'servidor': ""
+            'servidor': "",
+            'servidor2': ""
         }
         self.photo_images = []
         self.enviar = False
