@@ -205,8 +205,18 @@ class MainForm(ttk.Frame):
                                            callback=None,
                                            buffer_size=bufsize,
                                            )
+            dest = self.copy_with_callback(self.arquivo.get(),
+                                           f'{self.configuration["servidor2"]}\\{self.titulo.get()}.mxf',
+                                           follow_symlinks=follow,
+                                           callback=None,
+                                           buffer_size=bufsize,
+                                           )
+
             self.gerar_xml(self.configuration["servidor"], self.titulo.get(), self.arquivo.get())
+            self.gerar_xml(self.configuration["servidor2"], self.titulo.get(), self.arquivo.get())
+
             self.checar_ack(self.configuration["servidor"], self.titulo.get())
+            self.checar_ack(self.configuration["servidor2"], self.titulo.get())
 
             if self.enviar:
                 self.enviar = False
@@ -310,6 +320,7 @@ class MainForm(ttk.Frame):
         try:
             self.label_porcent["text"] = "Aguardando arquivo de confirmação..."
             size_aux = 0
+            contador_erro = 0
             arquivo = os.path.join(caminho, f"{nome_arquivo}.ack")
 
             while True:
@@ -325,7 +336,16 @@ class MainForm(ttk.Frame):
                         continue
 
                     result = AckXML.read(caminho=caminho, arquivo=f"{nome_arquivo}.ack")
-                    os.remove(arquivo)
+                    while contador_erro < 5:
+                        try:
+                            os.remove(arquivo)
+                            break
+                        except Exception as ex:
+                            if contador_erro < 5:
+                                contador_erro = contador_erro + 1
+                                continue
+                            else:
+                                raise Exception(ex)
 
                     if result[0] == "0":
                         return
