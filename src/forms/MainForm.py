@@ -220,8 +220,7 @@ class MainForm(ttk.Frame):
             result_destino2 = self.checar_ack(self.configuration["servidor2"], self.titulo.get())
 
             self.show_progressbar(False)
-            self.set_progressbar_determinate(True)
-            self.label_porcent["text"] = "0%"
+            self.update_label_progressbar(True, "100%")
             self.change_button_action_state(True)
 
             if self.enviar:
