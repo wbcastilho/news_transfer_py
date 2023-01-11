@@ -15,6 +15,7 @@ from src.adapters.MyRandom import MyRandom
 from src.adapters.AckXML import AckXML
 from src.utils.ConvertVideo import ConvertVideo
 from src.utils.StopWatch import StopWatch
+from src.adapters.MyFile import MyFile
 
 
 class SameFileError(OSError):
@@ -245,6 +246,8 @@ class MainForm(ttk.Frame):
             else:
                 messagebox.showwarning(title="Atenção", message="Transferência cancelada pelo usuário")
         except Exception as ex:
+            self.excluir_arquivos(self.configuration["servidor"], self.titulo.get())
+            self.excluir_arquivos(self.configuration["servidor2"], self.titulo.get())
             self.show_progressbar(False)
             self.set_progressbar_determinate(True)
             self.label_porcent["text"] = "0%"
@@ -376,13 +379,11 @@ class MainForm(ttk.Frame):
             raise Exception(ex)
 
     @staticmethod
-    def excluir_arquivos(nome_arquivo):
-        if os.path.exists(f"{nome_arquivo}.mxf"):
-            os.remove(f"{nome_arquivo}.mxf")
-        if os.path.exists(f"{nome_arquivo}.xml"):
-            os.remove(f"{nome_arquivo}.xml")
-        if os.path.exists(f"{nome_arquivo}.ack"):
-            os.remove(f"{nome_arquivo}.ack")
+    def excluir_arquivos(caminho, nome_arquivo):
+        file = MyFile()
+        file.excluir_arquivo_mxf(caminho, nome_arquivo)
+        file.excluir_arquivo_xml(caminho, nome_arquivo)
+        file.excluir_arquivo_ack(caminho, nome_arquivo)
 
     def update_progress(self, copied: float, total: float) -> None:
         porcent = int((copied * 100) / total)
