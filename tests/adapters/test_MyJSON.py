@@ -6,7 +6,8 @@ class TestMyJSON(unittest.TestCase):
     """ Método chamado antes de cada teste """
     def setUp(self) -> None:
         self.configuration = {
-            'servidor': "C:/"
+            'servidor': "C:/",
+            'servidor2': "D:/"
         }
 
     """ Método chamado depois de cada teste """

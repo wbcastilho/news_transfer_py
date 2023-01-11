@@ -14,6 +14,7 @@ from src.adapters.VideoXML import VideoXML
 from src.adapters.MyRandom import MyRandom
 from src.adapters.AckXML import AckXML
 from src.utils.ConvertVideo import ConvertVideo
+from src.utils.StopWatch import StopWatch
 
 
 class SameFileError(OSError):
@@ -205,18 +206,18 @@ class MainForm(ttk.Frame):
                                            callback=None,
                                            buffer_size=bufsize,
                                            )
-            dest = self.copy_with_callback(self.arquivo.get(),
+            '''dest = self.copy_with_callback(self.arquivo.get(),
                                            f'{self.configuration["servidor2"]}\\{self.titulo.get()}.mxf',
                                            follow_symlinks=follow,
                                            callback=None,
                                            buffer_size=bufsize,
-                                           )
+                                           )'''
 
             self.gerar_xml(self.configuration["servidor"], self.titulo.get(), self.arquivo.get())
-            self.gerar_xml(self.configuration["servidor2"], self.titulo.get(), self.arquivo.get())
+            # self.gerar_xml(self.configuration["servidor2"], self.titulo.get(), self.arquivo.get())
 
             self.checar_ack(self.configuration["servidor"], self.titulo.get())
-            self.checar_ack(self.configuration["servidor2"], self.titulo.get())
+            # self.checar_ack(self.configuration["servidor2"], self.titulo.get())
 
             if self.enviar:
                 self.enviar = False
@@ -319,9 +320,8 @@ class MainForm(ttk.Frame):
     def checar_ack(self, caminho, nome_arquivo):
         try:
             self.label_porcent["text"] = "Aguardando arquivo de confirmação..."
-            size_aux = 0
-            contador_erro = 0
             arquivo = os.path.join(caminho, f"{nome_arquivo}.ack")
+            stop_watch = StopWatch()
 
             while True:
                 if not self.enviar:
@@ -329,23 +329,17 @@ class MainForm(ttk.Frame):
                     self.label_porcent["text"] = "Cancelando..."
                     return
 
-                if os.path.isfile(arquivo):
-                    size = os.stat(arquivo).st_size
-                    if size_aux < size:
-                        size_aux = size
-                        continue
-
-                    result = AckXML.read(caminho=caminho, arquivo=f"{nome_arquivo}.ack")
-                    while contador_erro < 5:
+                if os.path.exists(arquivo):
+                    while True:
                         try:
+                            result = AckXML.read(caminho=caminho, arquivo=f"{nome_arquivo}.ack")
                             os.remove(arquivo)
                             break
                         except Exception as ex:
-                            if contador_erro < 5:
-                                contador_erro = contador_erro + 1
+                            if stop_watch.check(15):
                                 continue
                             else:
-                                raise Exception(ex)
+                                raise Exception(f"Falha ao receber excluir arquivo {nome_arquivo}.ack")
 
                     if result[0] == "0":
                         return
