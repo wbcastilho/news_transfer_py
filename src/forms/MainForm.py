@@ -36,7 +36,6 @@ class MainForm(ttk.Frame):
         }
         self.photo_images = []
         self.enviar = False
-        self.BUFFER_SIZE = 4096 * 1024
 
         self.arquivo = ttk.StringVar()
         self.titulo = ttk.StringVar()
@@ -197,14 +196,12 @@ class MainForm(ttk.Frame):
 
     def background_worker(self):
         try:
-            bufsize = self.BUFFER_SIZE
             follow = False
 
             dest = self.copy_with_callback(self.arquivo.get(),
                                            f'{self.configuration["servidor"]}\\{self.titulo.get()}.mxf',
                                            follow_symlinks=follow,
-                                           callback=None,
-                                           buffer_size=bufsize,
+                                           callback=None
                                            )
             self.update_label_progressbar(False, "Gerando arquivo xml...")
             self.gerar_xml(self.configuration["servidor"], self.titulo.get(), self.arquivo.get())
@@ -213,14 +210,13 @@ class MainForm(ttk.Frame):
             dest = self.copy_with_callback(self.arquivo.get(),
                                            f'{self.configuration["servidor2"]}\\{self.titulo.get()}.mxf',
                                            follow_symlinks=follow,
-                                           callback=None,
-                                           buffer_size=bufsize,
+                                           callback=None
                                            )
             self.update_label_progressbar(False, "Gerando arquivo xml...")
             self.gerar_xml(self.configuration["servidor2"], self.titulo.get(), self.arquivo.get())
 
-            # self.checar_ack(self.configuration["servidor"], self.titulo.get())
-            # self.checar_ack(self.configuration["servidor2"], self.titulo.get())
+            result_destino1 = self.checar_ack(self.configuration["servidor"], self.titulo.get())
+            result_destino2 = self.checar_ack(self.configuration["servidor2"], self.titulo.get())
 
             self.show_progressbar(False)
             self.set_progressbar_determinate(True)
@@ -228,9 +224,24 @@ class MainForm(ttk.Frame):
             self.change_button_action_state(True)
 
             if self.enviar:
+                if result_destino1 and result_destino2:
+                    messagebox.showinfo(title="Atenção", message=f"Arquivo {self.titulo.get()}.mxf "
+                                                                 f"transferido com sucesso para os dois destinos.")
+                elif result_destino1:
+                    messagebox.showwarning(title="Atenção",
+                                           message=f"Arquivo {self.titulo.get()}.mxf "
+                                                   f"transferido com sucesso para o destino 1 mas "
+                                                   f"apresentou falha ao ser transferido ao destino 2.")
+                elif result_destino2:
+                    messagebox.showwarning(title="Atenção",
+                                           message=f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para o "
+                                                   f"destino 2 mas apresentou falha ao ser transferido ao destino 1.")
+                else:
+                    messagebox.showwarning(title="Atenção",
+                                           message=f"Falha ao transferir arquivo para os dois destinos selecionados.")
+
                 self.enviar = False
                 self.clean_fields()
-                messagebox.showinfo(title="Atenção", message=f"Arquivo {dest} copiado com sucesso.")
             else:
                 messagebox.showwarning(title="Atenção", message="Transferência cancelada pelo usuário")
         except Exception as ex:
@@ -240,8 +251,9 @@ class MainForm(ttk.Frame):
             self.change_button_action_state(True)
             messagebox.showerror(title="Erro", message=ex)
 
-    def copy_with_callback(self, src, dest, callback=None, follow_symlinks=True, buffer_size=4096 * 1024):
+    def copy_with_callback(self, src, dest, callback=None, follow_symlinks=True):
         try:
+            buffer_size = 4096 * 1024
             srcfile = pathlib.Path(src)
             destpath = pathlib.Path(dest)
 
@@ -322,7 +334,7 @@ class MainForm(ttk.Frame):
         except Exception as ex:
             raise Exception(f"Falha ao gerar arquivo xml. {ex}")
 
-    def checar_ack(self, caminho, nome_arquivo):
+    def checar_ack(self, caminho, nome_arquivo) -> bool:
         try:
             self.label_porcent["text"] = "Aguardando arquivo de confirmação..."
             arquivo = os.path.join(caminho, f"{nome_arquivo}.ack")
@@ -332,10 +344,15 @@ class MainForm(ttk.Frame):
                 if not self.enviar:
                     self.set_progressbar_determinate(False)
                     self.label_porcent["text"] = "Cancelando..."
-                    return
+                    return False
 
                 if os.path.exists(arquivo):
                     while True:
+                        if not self.enviar:
+                            self.set_progressbar_determinate(False)
+                            self.label_porcent["text"] = "Cancelando..."
+                            return False
+
                         try:
                             result = AckXML.read(caminho=caminho, arquivo=f"{nome_arquivo}.ack")
                             os.remove(arquivo)
@@ -347,7 +364,7 @@ class MainForm(ttk.Frame):
                                 raise Exception(f"Falha ao receber excluir arquivo {nome_arquivo}.ack")
 
                     if result[0] == "0":
-                        return
+                        return True
                     elif result[0] == "4" \
                             or result[0] == "8" \
                             or result[0] == "9" \
@@ -357,6 +374,15 @@ class MainForm(ttk.Frame):
                         raise Exception("Erro desconhecido ao receber arquivo de confirmação.")
         except Exception as ex:
             raise Exception(ex)
+
+    @staticmethod
+    def excluir_arquivos(nome_arquivo):
+        if os.path.exists(f"{nome_arquivo}.mxf"):
+            os.remove(f"{nome_arquivo}.mxf")
+        if os.path.exists(f"{nome_arquivo}.xml"):
+            os.remove(f"{nome_arquivo}.xml")
+        if os.path.exists(f"{nome_arquivo}.ack"):
+            os.remove(f"{nome_arquivo}.ack")
 
     def update_progress(self, copied: float, total: float) -> None:
         porcent = int((copied * 100) / total)
