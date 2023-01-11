@@ -206,18 +206,26 @@ class MainForm(ttk.Frame):
                                            callback=None,
                                            buffer_size=bufsize,
                                            )
-            '''dest = self.copy_with_callback(self.arquivo.get(),
+            self.update_label_progressbar(False, "Gerando arquivo xml...")
+            self.gerar_xml(self.configuration["servidor"], self.titulo.get(), self.arquivo.get())
+
+            self.update_label_progressbar(True, "0%")
+            dest = self.copy_with_callback(self.arquivo.get(),
                                            f'{self.configuration["servidor2"]}\\{self.titulo.get()}.mxf',
                                            follow_symlinks=follow,
                                            callback=None,
                                            buffer_size=bufsize,
-                                           )'''
+                                           )
+            self.update_label_progressbar(False, "Gerando arquivo xml...")
+            self.gerar_xml(self.configuration["servidor2"], self.titulo.get(), self.arquivo.get())
 
-            self.gerar_xml(self.configuration["servidor"], self.titulo.get(), self.arquivo.get())
-            # self.gerar_xml(self.configuration["servidor2"], self.titulo.get(), self.arquivo.get())
-
-            self.checar_ack(self.configuration["servidor"], self.titulo.get())
+            # self.checar_ack(self.configuration["servidor"], self.titulo.get())
             # self.checar_ack(self.configuration["servidor2"], self.titulo.get())
+
+            self.show_progressbar(False)
+            self.set_progressbar_determinate(True)
+            self.label_porcent["text"] = "0%"
+            self.change_button_action_state(True)
 
             if self.enviar:
                 self.enviar = False
@@ -226,12 +234,11 @@ class MainForm(ttk.Frame):
             else:
                 messagebox.showwarning(title="Atenção", message="Transferência cancelada pelo usuário")
         except Exception as ex:
-            messagebox.showerror(title="Erro", message=ex)
-        finally:
             self.show_progressbar(False)
             self.set_progressbar_determinate(True)
             self.label_porcent["text"] = "0%"
             self.change_button_action_state(True)
+            messagebox.showerror(title="Erro", message=ex)
 
     def copy_with_callback(self, src, dest, callback=None, follow_symlinks=True, buffer_size=4096 * 1024):
         try:
@@ -298,11 +305,9 @@ class MainForm(ttk.Frame):
             if callback is not None:
                 callback(len(buf), copied, total)
 
-    def gerar_xml(self, servidor, titulo, arquivo):
+    @staticmethod
+    def gerar_xml(servidor, titulo, arquivo):
         try:
-            self.set_progressbar_determinate(False)
-            self.label_porcent["text"] = "Gerando arquivo xml..."
-
             dto = {
                 'codigo': MyRandom.gerar_codigo(),
                 'arquivo': titulo,
@@ -335,7 +340,7 @@ class MainForm(ttk.Frame):
                             result = AckXML.read(caminho=caminho, arquivo=f"{nome_arquivo}.ack")
                             os.remove(arquivo)
                             break
-                        except Exception as ex:
+                        except Exception:
                             if stop_watch.check(15):
                                 continue
                             else:
@@ -373,6 +378,10 @@ class MainForm(ttk.Frame):
         else:
             self.progressbar["mode"] = "indeterminate"
             self.progressbar.start()
+
+    def update_label_progressbar(self, determinate: bool, text: str) -> None:
+        self.set_progressbar_determinate(determinate)
+        self.label_porcent["text"] = text
 
     def change_button_action_state(self, value: bool) -> None:
         if value:
