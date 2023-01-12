@@ -7,6 +7,8 @@ from ttkbootstrap.constants import *
 from pathlib import Path
 import threading
 import os
+
+from src.forms.LogForm import LogsForm
 from src.forms.SettingsForm import SettingsForm
 from src.adapters.MyJSON import MyJSON
 from src.adapters.VideoXML import VideoXML
@@ -16,6 +18,7 @@ from src.utils.ConvertVideo import ConvertVideo
 from src.utils.StopWatch import StopWatch
 from src.adapters.MyFile import MyFile
 from src.services.Log import Log
+from src.data.repository.LogRepository import LogRepository
 
 
 class SameFileError(OSError):
@@ -49,12 +52,20 @@ class MainForm(ttk.Frame):
         self.progressbar = None
         self.label_porcent = None
 
+        self.init_database()
         self.associate_icons()
         self.init_combobox()
         self.create_buttonbar()
         self.create_enviar_frame()
         self.create_progressbar_frame()
         self.read_config()
+
+    @staticmethod
+    def init_database():
+        try:
+            LogRepository.create_table()
+        except Exception as err:
+            messagebox.showwarning(title="Atenção", message=f"Falha ao se conectar com o banco de dados. {err}")
 
     def associate_icons(self) -> None:
         image_files = {
@@ -170,8 +181,13 @@ class MainForm(ttk.Frame):
             messagebox.showwarning(title="Atenção", message="Para abrir a janela de configurações é necessário antes "
                                                             "parar a monitoração clicando no botão Parar.")
 
-    def on_logs(self):
-        pass
+    @staticmethod
+    def on_logs():
+        logs_form = ttk.Toplevel()
+        logs_form.title("Logs")
+        logs_form.grab_set()
+        logs_form.resizable(False, False)
+        LogsForm(logs_form)
 
     def on_browse(self) -> None:
         filetypes = (
