@@ -15,9 +15,9 @@ via comando.
 . .\venv\Script\acrivate
 
 ### Pacotes importados
-* ttkbootstrap
-* Pillow
-* peewee
+* ttkbootstrap - Bootstrap para tkinter
+* Pillow - Manipulação de imagens
+* peewee - ORM
 
 ### Observação
 Copiar o arquivo ffmpeg.exe para a pasta raiz do programa. Por causa do tamanho do arquivo não possível subir para o 
