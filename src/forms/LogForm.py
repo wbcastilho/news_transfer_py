@@ -26,7 +26,7 @@ class LogsForm(ttk.Frame):
         self.treeview.heading('log', text='Mensagem', anchor=W)
 
         self.treeview.column('data', stretch=False, width=150)
-        self.treeview.column('log', stretch=False, width=650)
+        self.treeview.column('log', stretch=False, width=1050)
 
         yscroll = ttk.Scrollbar(self, orient=VERTICAL, command=self.treeview.yview)
         yscroll.pack(side=RIGHT, fill=Y)

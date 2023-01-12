@@ -186,6 +186,7 @@ class MainForm(ttk.Frame):
         logs_form = ttk.Toplevel()
         logs_form.title("Logs")
         logs_form.grab_set()
+        logs_form.geometry("600x400")
         logs_form.resizable(False, False)
         LogsForm(logs_form)
 
