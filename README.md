@@ -7,12 +7,17 @@ Ao fazer o clone do projeto será necessário criar e habilitar a virtual env
 #### Criar venv
 python -m venv venv
 
-#### Habilitar venv PyCharm
+#### Habilitar venv no editor PyCharm
 Como estou usando o PyCharm eu apenas apontei o interpretador para o python da venv criada e não precisei ativar 
 via comando.
 
-#### Habilitar venv via prompt
+#### Habilitar venv via prompt caso não utilize o editor PyCharm
 . .\venv\Script\acrivate
+
+### Pacotes importados
+* ttkbootstrap
+* Pillow
+* peewee
 
 ### Observação
 Copiar o arquivo ffmpeg.exe para a pasta raiz do programa. Por causa do tamanho do arquivo não possível subir para o 
