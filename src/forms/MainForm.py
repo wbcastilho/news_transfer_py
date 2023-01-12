@@ -185,6 +185,7 @@ class MainForm(ttk.Frame):
     def on_logs():
         logs_form = ttk.Toplevel()
         logs_form.title("Logs")
+        logs_form.iconbitmap('src/assets/favicon.ico')
         logs_form.grab_set()
         logs_form.geometry("600x400")
         logs_form.resizable(False, False)
