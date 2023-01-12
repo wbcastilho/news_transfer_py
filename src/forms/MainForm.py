@@ -215,24 +215,8 @@ class MainForm(ttk.Frame):
 
     def background_worker(self):
         try:
-            follow = False
-
-            dest = self.copy_with_callback(self.arquivo.get(),
-                                           f'{self.configuration["servidor"]}\\{self.titulo.get()}.mxf',
-                                           follow_symlinks=follow,
-                                           callback=None
-                                           )
-            self.update_label_progressbar(False, "Gerando arquivo xml...")
-            self.gerar_xml(self.configuration["servidor"], self.titulo.get(), self.arquivo.get())
-
-            self.update_label_progressbar(True, "0%")
-            dest = self.copy_with_callback(self.arquivo.get(),
-                                           f'{self.configuration["servidor2"]}\\{self.titulo.get()}.mxf',
-                                           follow_symlinks=follow,
-                                           callback=None
-                                           )
-            self.update_label_progressbar(False, "Gerando arquivo xml...")
-            self.gerar_xml(self.configuration["servidor2"], self.titulo.get(), self.arquivo.get())
+            self.copiar_arquivo_e_gerar_xml(self.configuration["servidor"], self.titulo.get(), self.arquivo.get())
+            self.copiar_arquivo_e_gerar_xml(self.configuration["servidor2"], self.titulo.get(), self.arquivo.get())
 
             result_destino1 = self.checar_ack(self.configuration["servidor"], self.titulo.get())
             result_destino2 = self.checar_ack(self.configuration["servidor2"], self.titulo.get())
@@ -242,32 +226,7 @@ class MainForm(ttk.Frame):
             self.change_button_action_state(True)
 
             if self.enviar:
-                if result_destino1 and result_destino2:
-                    Log.save(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
-                             f"{self.configuration['servidor']} e para {self.configuration['servidor2']}")
-                    messagebox.showinfo(title="Atenção", message=f"Arquivo {self.titulo.get()}.mxf "
-                                                                 f"transferido com sucesso para os dois destinos.")
-                elif result_destino1:
-                    Log.save(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
-                             f"{self.configuration['servidor']} mas apresentou falha o ser transferido para "
-                             f"{self.configuration['servidor2']}")
-                    messagebox.showwarning(title="Atenção",
-                                           message=f"Arquivo {self.titulo.get()}.mxf "
-                                                   f"transferido com sucesso para o destino 1 mas "
-                                                   f"apresentou falha ao ser transferido ao destino 2.")
-                elif result_destino2:
-                    Log.save(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
-                             f"{self.configuration['servidor2']} mas apresentou falha o ser transferido para "
-                             f"{self.configuration['servidor']}")
-                    messagebox.showwarning(title="Atenção",
-                                           message=f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para o "
-                                                   f"destino 2 mas apresentou falha ao ser transferido ao destino 1.")
-                else:
-                    Log.save(f"Falha ao transferir arquivo {self.titulo.get()}.mxf para "
-                             f"{self.configuration['servidor']} e para {self.configuration['servidor2']}.")
-                    messagebox.showwarning(title="Atenção",
-                                           message=f"Falha ao transferir arquivo para os dois destinos selecionados.")
-
+                self.exibir_messagebox_concluido(result_destino1, result_destino2)
                 self.enviar = False
                 self.clean_fields()
             else:
@@ -281,6 +240,16 @@ class MainForm(ttk.Frame):
             self.label_porcent["text"] = "0%"
             self.change_button_action_state(True)
             messagebox.showerror(title="Erro", message=ex)
+
+    def copiar_arquivo_e_gerar_xml(self, destino, titulo, arquivo):
+        self.update_label_progressbar(True, "0%")
+        self.copy_with_callback(arquivo,
+                                f'{destino}\\{titulo}.mxf',
+                                follow_symlinks=False,
+                                callback=None
+                                )
+        self.update_label_progressbar(False, "Gerando arquivo xml...")
+        self.gerar_xml(destino, titulo, arquivo)
 
     def copy_with_callback(self, src, dest, callback=None, follow_symlinks=True):
         try:
@@ -405,6 +374,33 @@ class MainForm(ttk.Frame):
                         raise Exception("Erro desconhecido ao receber arquivo de confirmação.")
         except Exception as ex:
             raise Exception(ex)
+
+    def exibir_messagebox_concluido(self, result_destino1, result_destino2):
+        if result_destino1 and result_destino2:
+            Log.save(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
+                     f"{self.configuration['servidor']} e para {self.configuration['servidor2']}")
+            messagebox.showinfo(title="Atenção", message=f"Arquivo {self.titulo.get()}.mxf "
+                                                         f"transferido com sucesso para os dois destinos.")
+        elif result_destino1:
+            Log.save(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
+                     f"{self.configuration['servidor']} mas apresentou falha o ser transferido para "
+                     f"{self.configuration['servidor2']}")
+            messagebox.showwarning(title="Atenção",
+                                   message=f"Arquivo {self.titulo.get()}.mxf "
+                                           f"transferido com sucesso para o destino 1 mas "
+                                           f"apresentou falha ao ser transferido ao destino 2.")
+        elif result_destino2:
+            Log.save(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
+                     f"{self.configuration['servidor2']} mas apresentou falha o ser transferido para "
+                     f"{self.configuration['servidor']}")
+            messagebox.showwarning(title="Atenção",
+                                   message=f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para o "
+                                           f"destino 2 mas apresentou falha ao ser transferido ao destino 1.")
+        else:
+            Log.save(f"Falha ao transferir arquivo {self.titulo.get()}.mxf para "
+                     f"{self.configuration['servidor']} e para {self.configuration['servidor2']}.")
+            messagebox.showwarning(title="Atenção",
+                                   message=f"Falha ao transferir arquivo para os dois destinos selecionados.")
 
     @staticmethod
     def excluir_arquivos(caminho, nome_arquivo):
