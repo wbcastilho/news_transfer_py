@@ -227,7 +227,6 @@ class MainForm(ttk.Frame):
 
             if self.enviar:
                 self.exibir_messagebox_concluido(result_destino1, result_destino2)
-                self.enviar = False
                 self.clean_fields()
             else:
                 Log.save(f"Transferência cancelada pelo usuário.")
@@ -239,7 +238,10 @@ class MainForm(ttk.Frame):
             self.set_progressbar_determinate(True)
             self.label_porcent["text"] = "0%"
             self.change_button_action_state(True)
+            Log.save(f"{ex}")
             messagebox.showerror(title="Erro", message=ex)
+        finally:
+            self.enviar = False
 
     def copiar_arquivo_e_gerar_xml(self, destino, titulo, arquivo):
         self.update_label_progressbar(True, "0%")
@@ -346,6 +348,9 @@ class MainForm(ttk.Frame):
                     self.label_porcent["text"] = "Cancelando..."
                     return False
 
+                if not stop_watch.check(1):
+                    raise Exception(f"Tempo de espera excedido para receber o arquivo de checagem.")
+
                 if os.path.exists(arquivo):
                     while True:
                         if not self.enviar:
@@ -358,7 +363,7 @@ class MainForm(ttk.Frame):
                             os.remove(arquivo)
                             break
                         except Exception:
-                            if stop_watch.check(15):
+                            if stop_watch.check(2):
                                 continue
                             else:
                                 raise Exception(f"Falha ao receber excluir arquivo {nome_arquivo}.ack")
