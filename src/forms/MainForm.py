@@ -6,7 +6,6 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from pathlib import Path
 import threading
-import time
 import os
 from src.forms.SettingsForm import SettingsForm
 from src.adapters.MyJSON import MyJSON
@@ -16,7 +15,7 @@ from src.adapters.AckXML import AckXML
 from src.utils.ConvertVideo import ConvertVideo
 from src.utils.StopWatch import StopWatch
 from src.adapters.MyFile import MyFile
-from src.utils.Log import Log
+from src.services.Log import Log
 
 
 class SameFileError(OSError):
