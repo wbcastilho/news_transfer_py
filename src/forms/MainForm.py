@@ -16,6 +16,7 @@ from src.adapters.AckXML import AckXML
 from src.utils.ConvertVideo import ConvertVideo
 from src.utils.StopWatch import StopWatch
 from src.adapters.MyFile import MyFile
+from src.utils.Log import Log
 
 
 class SameFileError(OSError):
@@ -225,25 +226,36 @@ class MainForm(ttk.Frame):
 
             if self.enviar:
                 if result_destino1 and result_destino2:
+                    Log.save(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
+                             f"{self.configuration['servidor']} e para {self.configuration['servidor2']}")
                     messagebox.showinfo(title="Atenção", message=f"Arquivo {self.titulo.get()}.mxf "
                                                                  f"transferido com sucesso para os dois destinos.")
                 elif result_destino1:
+                    Log.save(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
+                             f"{self.configuration['servidor']} mas apresentou falha o ser transferido para "
+                             f"{self.configuration['servidor2']}")
                     messagebox.showwarning(title="Atenção",
                                            message=f"Arquivo {self.titulo.get()}.mxf "
                                                    f"transferido com sucesso para o destino 1 mas "
                                                    f"apresentou falha ao ser transferido ao destino 2.")
                 elif result_destino2:
+                    Log.save(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
+                             f"{self.configuration['servidor2']} mas apresentou falha o ser transferido para "
+                             f"{self.configuration['servidor']}")
                     messagebox.showwarning(title="Atenção",
                                            message=f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para o "
                                                    f"destino 2 mas apresentou falha ao ser transferido ao destino 1.")
                 else:
+                    Log.save(f"Falha ao transferir arquivo {self.titulo.get()}.mxf para "
+                             f"{self.configuration['servidor']} e para {self.configuration['servidor2']}.")
                     messagebox.showwarning(title="Atenção",
                                            message=f"Falha ao transferir arquivo para os dois destinos selecionados.")
 
                 self.enviar = False
                 self.clean_fields()
             else:
-                messagebox.showwarning(title="Atenção", message="Transferência cancelada pelo usuário")
+                Log.save(f"Transferência cancelada pelo usuário.")
+                messagebox.showwarning(title="Atenção", message="Transferência cancelada pelo usuário.")
         except Exception as ex:
             self.excluir_arquivos(self.configuration["servidor"], self.titulo.get())
             self.excluir_arquivos(self.configuration["servidor2"], self.titulo.get())
