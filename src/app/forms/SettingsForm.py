@@ -27,7 +27,7 @@ class SettingsForm(ttk.Frame):
         self.select_checkbutton()
 
     def create_config_frame(self) -> None:
-        label_frame = ttk.Labelframe(self, text='Configuração Destino 1')
+        label_frame = ttk.Labelframe(self, text='Configuração Servidor 1')
         label_frame.pack(fill="x", padx=10, pady=5)
 
         frame = ttk.Frame(label_frame)
@@ -47,7 +47,7 @@ class SettingsForm(ttk.Frame):
                                    command=lambda: self.on_browse(1))
         button_browse.grid(row=0, column=2, padx=2)
 
-        label_frame = ttk.Labelframe(self, text='Configuração Destino 2')
+        label_frame = ttk.Labelframe(self, text='Configuração Servidor 2')
         label_frame.pack(fill="x", padx=10, pady=5)
 
         frame = ttk.Frame(label_frame)
@@ -80,7 +80,7 @@ class SettingsForm(ttk.Frame):
         frame = ttk.Frame(label_frame)
         frame.pack(fill="x", padx=20, pady=10)
 
-        label = ttk.Label(frame, text="Timeout Checagem")
+        label = ttk.Label(frame, text="Timeout Checagem (minutos)")
         label.grid(row=0, column=0, padx=1, pady=(20, 0), sticky=ttk.E)
 
         spinbox_timeout = ttk.Spinbox(frame, width=5, justify="center", from_=1, to=20,
