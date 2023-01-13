@@ -14,7 +14,8 @@ class SettingsForm(ttk.Frame):
         self.local_configuration = {
             'servidor': ttk.StringVar(),
             'habilitar_servidor2': ttk.IntVar(),
-            'servidor2': ttk.StringVar()
+            'servidor2': ttk.StringVar(),
+            'timeout_ack': ttk.IntVar()
         }
         self.button_save = None
         self.button_cancel = None
@@ -73,6 +74,19 @@ class SettingsForm(ttk.Frame):
                                          state="disabled", command=lambda: self.on_browse(2))
         self.button_browse2.grid(row=1, column=2, padx=2)
 
+        label_frame = ttk.Labelframe(self, text='Configuração Geral')
+        label_frame.pack(fill="x", padx=10, pady=5)
+
+        frame = ttk.Frame(label_frame)
+        frame.pack(fill="x", padx=20, pady=10)
+
+        label = ttk.Label(frame, text="Timeout Arquivo de Checagem")
+        label.grid(row=0, column=0, padx=1, pady=(20, 0), sticky=ttk.E)
+
+        spinbox_timeout = ttk.Spinbox(frame, width=5, justify="center", from_=1, to=20,
+                                      textvariable=self.local_configuration["timeout_ack"], wrap=False)
+        spinbox_timeout.grid(row=0, column=1, padx=2, pady=(20, 0), sticky=ttk.W)
+
     def create_buttons(self) -> None:
         frame = ttk.Frame(self)
         frame.pack(fill="x", padx=10, pady=5)
@@ -95,10 +109,8 @@ class SettingsForm(ttk.Frame):
                 self.change_configuration()
                 my_json = MyJSON('config.json', self.configuration)
                 my_json.write()
-                # SimpleLog.save("Configurações salvas com sucesso!")
                 self.master.destroy()
         except Exception as err:
-            # SimpleLog.save(err)
             messagebox.showerror(title="Erro", message=err)
 
     def on_browse(self, servidor):
@@ -116,11 +128,13 @@ class SettingsForm(ttk.Frame):
         self.local_configuration["servidor"].set(self.configuration["servidor"])
         self.local_configuration["servidor2"].set(self.configuration["servidor2"])
         self.local_configuration["habilitar_servidor2"].set(self.configuration["habilitar_servidor2"])
+        self.local_configuration["timeout_ack"].set(self.configuration["timeout_ack"])
 
     def change_configuration(self) -> None:
         self.configuration["servidor"] = self.local_configuration["servidor"].get()
         self.configuration["servidor2"] = self.local_configuration["servidor2"].get()
         self.configuration["habilitar_servidor2"] = self.local_configuration["habilitar_servidor2"].get()
+        self.configuration["timeout_ack"] = self.local_configuration["timeout_ack"].get()
 
     def validate(self) -> bool:
         if self.local_configuration["servidor"].get() == "":

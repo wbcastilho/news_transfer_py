@@ -37,7 +37,8 @@ class MainForm(ttk.Frame):
         self.configuration = {
             'servidor': "",
             'servidor2': "",
-            'habilitar_servidor2': ""
+            'habilitar_servidor2': 0,
+            'timeout_ack': 15
         }
         self.photo_images = []
         self.enviar = False
@@ -161,13 +162,10 @@ class MainForm(ttk.Frame):
             my_json = MyJSON('config.json', self.configuration)
             my_json.read()
         except PermissionError as err:
-            # SimpleLog.save(err)
             messagebox.showwarning(title="Atenção", message=err)
         except FileNotFoundError as err:
-            # SimpleLog.save(err)
             messagebox.showwarning(title="Atenção", message=err)
         except Exception as err:
-            # SimpleLog.save(err)
             messagebox.showwarning(title="Atenção", message=err)
 
     def on_settings(self) -> None:
@@ -355,7 +353,7 @@ class MainForm(ttk.Frame):
                     self.label_porcent["text"] = "Cancelando..."
                     return False
 
-                if not stop_watch.check(15):
+                if not stop_watch.check(self.configuration["timeout_ack"]):
                     raise Exception(f"Tempo de espera excedido para receber o arquivo de checagem.")
 
                 if os.path.exists(arquivo):
@@ -370,7 +368,7 @@ class MainForm(ttk.Frame):
                             os.remove(arquivo)
                             break
                         except Exception:
-                            if stop_watch.check(16):
+                            if stop_watch.check(self.configuration["timeout_ack"]):
                                 continue
                             else:
                                 raise Exception(f"Falha ao receber excluir arquivo {nome_arquivo}.ack")

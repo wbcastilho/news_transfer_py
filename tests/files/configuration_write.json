@@ -1,1 +1,1 @@
-{"servidor": "C:/", "servidor2": "D:/", "habilitar_servidor2": 0}
+{"servidor": "C:/", "servidor2": "D:/", "habilitar_servidor2": 0, "timeout_ack": 15}
