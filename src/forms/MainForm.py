@@ -215,12 +215,18 @@ class MainForm(ttk.Frame):
             self.change_button_action_state(True)
 
     def background_worker(self):
+        result_destino2 = False
+
         try:
             self.copiar_arquivo_e_gerar_xml(self.configuration["servidor"], self.titulo.get(), self.arquivo.get())
-            self.copiar_arquivo_e_gerar_xml(self.configuration["servidor2"], self.titulo.get(), self.arquivo.get())
+
+            if self.configuration["habilitar_servidor2"] == 1:
+                self.copiar_arquivo_e_gerar_xml(self.configuration["servidor2"], self.titulo.get(), self.arquivo.get())
 
             result_destino1 = self.checar_ack(self.configuration["servidor"], self.titulo.get())
-            result_destino2 = self.checar_ack(self.configuration["servidor2"], self.titulo.get())
+
+            if self.configuration["habilitar_servidor2"] == 1:
+                result_destino2 = self.checar_ack(self.configuration["servidor2"], self.titulo.get())
 
             self.show_progressbar(False)
             self.update_label_progressbar(True, "100%")
@@ -349,7 +355,7 @@ class MainForm(ttk.Frame):
                     self.label_porcent["text"] = "Cancelando..."
                     return False
 
-                if not stop_watch.check(1):
+                if not stop_watch.check(15):
                     raise Exception(f"Tempo de espera excedido para receber o arquivo de checagem.")
 
                 if os.path.exists(arquivo):
@@ -364,7 +370,7 @@ class MainForm(ttk.Frame):
                             os.remove(arquivo)
                             break
                         except Exception:
-                            if stop_watch.check(2):
+                            if stop_watch.check(16):
                                 continue
                             else:
                                 raise Exception(f"Falha ao receber excluir arquivo {nome_arquivo}.ack")
@@ -382,7 +388,14 @@ class MainForm(ttk.Frame):
             raise Exception(ex)
 
     def exibir_messagebox_concluido(self, result_destino1, result_destino2):
-        if result_destino1 and result_destino2:
+        if self.configuration["habilitar_servidor2"] == 0 and result_destino1:
+            Log.save(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para {self.configuration['servidor']}")
+            messagebox.showinfo(title="Atenção", message=f"Arquivo {self.titulo.get()}.mxf "
+                                                         f"transferido com sucesso!")
+        elif self.configuration["habilitar_servidor2"] == 0 and not result_destino1:
+            Log.save("Falha ao transferir arquivo.")
+            messagebox.showinfo(title="Atenção", message="Falha ao transferir arquivo.")
+        elif result_destino1 and result_destino2:
             Log.save(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
                      f"{self.configuration['servidor']} e para {self.configuration['servidor2']}")
             messagebox.showinfo(title="Atenção", message=f"Arquivo {self.titulo.get()}.mxf "
@@ -459,7 +472,7 @@ class MainForm(ttk.Frame):
         if self.arquivo.get() is None or self.arquivo.get() == "":
             messagebox.showwarning(title="Atenção", message="O campo arquivo deve ser selecionado.")
             return False
-        if self.file_extension(self.arquivo.get()) != ".MXF":
+        if MyFile.extensao_arquivo(self.arquivo.get()) != ".MXF":
             messagebox.showwarning(title="Atenção", message="O arquivo selecionado deve ser um arquivo com extensão "
                                                             ".mxf.")
             return False
@@ -471,7 +484,3 @@ class MainForm(ttk.Frame):
             return False
         return True
 
-    @staticmethod
-    def file_extension(src):
-        extension = pathlib.Path(src).suffix
-        return extension

@@ -1,4 +1,5 @@
 import os
+import pathlib
 
 
 class MyFile:
@@ -22,4 +23,9 @@ class MyFile:
 
     def excluir_arquivo_ack(self, caminho, nome_arquivo):
         self._excluir_arquivo(caminho, nome_arquivo, "ack")
+
+    @staticmethod
+    def extensao_arquivo(arquivo):
+        extensao = pathlib.Path(arquivo).suffix
+        return extensao
 
