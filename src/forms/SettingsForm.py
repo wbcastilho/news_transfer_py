@@ -13,14 +13,17 @@ class SettingsForm(ttk.Frame):
         self.configuration = configuration
         self.local_configuration = {
             'servidor': ttk.StringVar(),
+            'habilitar_servidor2': ttk.IntVar(),
             'servidor2': ttk.StringVar()
         }
         self.button_save = None
         self.button_cancel = None
+        self.button_browse2 = None
 
         self.init_configuration()
         self.create_config_frame()
         self.create_buttons()
+        self.select_checkbutton()
 
     def create_config_frame(self) -> None:
         label_frame = ttk.Labelframe(self, text='Configuração Destino 1')
@@ -49,19 +52,26 @@ class SettingsForm(ttk.Frame):
         frame = ttk.Frame(label_frame)
         frame.pack(fill="x", padx=20, pady=10)
 
-        label = ttk.Label(frame, text="Caminho")
+        label = ttk.Label(frame, text="Habilitar")
         label.grid(row=0, column=0, padx=1, sticky=ttk.E, pady=5)
+
+        chk_habilitar = ttk.Checkbutton(frame, variable=self.local_configuration['habilitar_servidor2'],
+                                        onvalue=1, offvalue=0, command=self.select_checkbutton)
+        chk_habilitar.grid(row=0, column=1, padx=1, sticky=ttk.W, pady=5)
+
+        label = ttk.Label(frame, text="Caminho")
+        label.grid(row=1, column=0, padx=1, sticky=ttk.E, pady=5)
 
         entry_servidor = ttk.Entry(frame,
                                    textvariable=self.local_configuration['servidor2'],
                                    width=100,
                                    state="disabled"
                                    )
-        entry_servidor.grid(row=0, column=1, padx=2, sticky=ttk.W, pady=5)
+        entry_servidor.grid(row=1, column=1, padx=2, sticky=ttk.W, pady=5)
 
-        button_browse2 = ttk.Button(frame, text="Selecionar Pasta", bootstyle=(INFO, OUTLINE),
-                                    command=lambda: self.on_browse(2))
-        button_browse2.grid(row=0, column=2, padx=2)
+        self.button_browse2 = ttk.Button(frame, text="Selecionar Pasta", bootstyle=(INFO, OUTLINE),
+                                         state="disabled", command=lambda: self.on_browse(2))
+        self.button_browse2.grid(row=1, column=2, padx=2)
 
     def create_buttons(self) -> None:
         frame = ttk.Frame(self)
@@ -72,6 +82,12 @@ class SettingsForm(ttk.Frame):
 
         self.button_save = ttk.Button(frame, text="Salvar", bootstyle="success", command=self.on_save)
         self.button_save.pack(side=RIGHT, padx=5, pady=10)
+
+    def select_checkbutton(self):
+        if self.local_configuration['habilitar_servidor2'].get() == 1:
+            self.button_browse2["state"] = "enabled"
+        else:
+            self.button_browse2["state"] = "disabled"
 
     def on_save(self) -> None:
         try:
@@ -99,10 +115,12 @@ class SettingsForm(ttk.Frame):
     def init_configuration(self) -> None:
         self.local_configuration["servidor"].set(self.configuration["servidor"])
         self.local_configuration["servidor2"].set(self.configuration["servidor2"])
+        self.local_configuration["habilitar_servidor2"].set(self.configuration["habilitar_servidor2"])
 
     def change_configuration(self) -> None:
         self.configuration["servidor"] = self.local_configuration["servidor"].get()
         self.configuration["servidor2"] = self.local_configuration["servidor2"].get()
+        self.configuration["habilitar_servidor2"] = self.local_configuration["habilitar_servidor2"].get()
 
     def validate(self) -> bool:
         if self.local_configuration["servidor"].get() == "":

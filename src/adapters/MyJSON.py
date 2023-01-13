@@ -8,7 +8,9 @@ class MyJSON:
         self.configuration = configuration
 
     def write(self) -> None:
-        config = Config(self.configuration['servidor'], self.configuration['servidor2'])
+        config = Config(self.configuration['servidor'],
+                        self.configuration['servidor2'],
+                        self.configuration['habilitar_servidor2'])
 
         try:
             with open(self.file, 'w') as f:
@@ -23,6 +25,7 @@ class MyJSON:
                 config = Config(**data)
                 self.configuration['servidor'] = config.servidor
                 self.configuration['servidor2'] = config.servidor2
+                self.configuration['habilitar_servidor2'] = config.habilitar_servidor2
         except PermissionError:
             raise PermissionError("Sem permissão para abrir o arquivo de configuração.")
         except FileNotFoundError:

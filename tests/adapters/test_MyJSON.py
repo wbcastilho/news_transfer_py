@@ -7,7 +7,8 @@ class TestMyJSON(unittest.TestCase):
     def setUp(self) -> None:
         self.configuration = {
             'servidor': "C:/",
-            'servidor2': "D:/"
+            'servidor2': "D:/",
+            'habilitar_servidor2': 0
         }
 
     """ Método chamado depois de cada teste """
@@ -19,6 +20,8 @@ class TestMyJSON(unittest.TestCase):
         my_json = MyJSON('tests\\files\\configuration.json', self.configuration)
         my_json.read()
         self.assertTrue(self.configuration["servidor"] == "C:/")
+        self.assertTrue(self.configuration["servidor2"] == "D:/")
+        self.assertEqual(self.configuration["habilitar_servidor2"], 0)
 
     def test_write(self):
         my_json = MyJSON('tests\\files\\configuration_write.json', self.configuration)
@@ -26,6 +29,8 @@ class TestMyJSON(unittest.TestCase):
 
         my_json.read()
         self.assertTrue(self.configuration["servidor"] == "C:/")
+        self.assertTrue(self.configuration["servidor2"] == "D:/")
+        self.assertEqual(self.configuration["habilitar_servidor2"], 0)
 
 
 if __name__ == '__main__':

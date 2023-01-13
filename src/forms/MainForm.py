@@ -36,7 +36,8 @@ class MainForm(ttk.Frame):
         self.pack(fill=BOTH, expand=YES)
         self.configuration = {
             'servidor': "",
-            'servidor2': ""
+            'servidor2': "",
+            'habilitar_servidor2': ""
         }
         self.photo_images = []
         self.enviar = False
