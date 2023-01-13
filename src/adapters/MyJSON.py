@@ -1,5 +1,5 @@
 import json
-from src.dto.Config import Config
+from src.business.dto.Config import Config
 
 
 class MyJSON:
