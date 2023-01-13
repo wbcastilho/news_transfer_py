@@ -1,4 +1,4 @@
-from src.forms.MainForm import MainForm
+from src.forms import MainForm
 import ttkbootstrap as ttk
 
 
