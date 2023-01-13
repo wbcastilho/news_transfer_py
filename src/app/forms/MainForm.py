@@ -8,8 +8,8 @@ from pathlib import Path
 import threading
 import os
 
-from src.forms.LogForm import LogsForm
-from src.forms.SettingsForm import SettingsForm
+from src.app.forms.LogForm import LogsForm
+from src.app.forms.SettingsForm import SettingsForm
 from src.adapters.MyJSON import MyJSON
 from src.adapters.VideoXML import VideoXML
 from src.adapters.MyRandom import MyRandom
@@ -172,7 +172,7 @@ class MainForm(ttk.Frame):
         if not self.enviar:
             setting_form = ttk.Toplevel()
             setting_form.title("Configurações")
-            setting_form.iconbitmap('src/assets/favicon.ico')
+            setting_form.iconbitmap('src/app/assets/favicon.ico')
             setting_form.grab_set()
             setting_form.resizable(False, False)
             SettingsForm(setting_form, self.configuration)
@@ -184,7 +184,7 @@ class MainForm(ttk.Frame):
     def on_logs():
         logs_form = ttk.Toplevel()
         logs_form.title("Logs")
-        logs_form.iconbitmap('src/assets/favicon.ico')
+        logs_form.iconbitmap('src/app/assets/favicon.ico')
         logs_form.grab_set()
         logs_form.geometry("600x400")
         logs_form.resizable(False, False)

@@ -1,4 +1,4 @@
-from src.forms import MainForm
+from src.app.forms.MainForm import MainForm
 import ttkbootstrap as ttk
 
 
@@ -7,7 +7,7 @@ if __name__ == '__main__':
         title="News Transfer - 1.0",
         resizable=(False, False)
     )
-    app.iconbitmap('src/assets/favicon.ico')
+    app.iconbitmap('src/app/assets/favicon.ico')
     MainForm(app)
 
     app.mainloop()
