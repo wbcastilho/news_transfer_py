@@ -1,5 +1,5 @@
 import unittest
-from src.utils.StopWatch import StopWatch
+from src.business.utils.StopWatch import StopWatch
 
 
 class TestStopWatch(unittest.TestCase):

@@ -10,14 +10,14 @@ import os
 
 from src.app.forms.LogForm import LogsForm
 from src.app.forms.SettingsForm import SettingsForm
-from src.adapters.MyJSON import MyJSON
-from src.adapters.VideoXML import VideoXML
-from src.adapters.MyRandom import MyRandom
-from src.adapters.AckXML import AckXML
-from src.utils.ConvertVideo import ConvertVideo
-from src.utils.StopWatch import StopWatch
-from src.adapters.MyFile import MyFile
-from src.services.Log import Log
+from src.business.adapters.MyJSON import MyJSON
+from src.business.adapters.VideoXML import VideoXML
+from src.business.adapters.MyRandom import MyRandom
+from src.business.adapters.AckXML import AckXML
+from src.business.utils.ConvertVideo import ConvertVideo
+from src.business.utils.StopWatch import StopWatch
+from src.business.adapters.MyFile import MyFile
+from src.business.services.LogService import LogService
 from src.data.repository.LogRepository import LogRepository
 
 
@@ -234,7 +234,7 @@ class MainForm(ttk.Frame):
                 self.exibir_messagebox_concluido(result_destino1, result_destino2)
                 self.clean_fields()
             else:
-                Log.save(f"Transferência cancelada pelo usuário.")
+                LogService.save(f"Transferência cancelada pelo usuário.")
                 messagebox.showwarning(title="Atenção", message="Transferência cancelada pelo usuário.")
         except Exception as ex:
             self.excluir_arquivos(self.configuration["servidor"], self.titulo.get())
@@ -243,7 +243,7 @@ class MainForm(ttk.Frame):
             self.set_progressbar_determinate(True)
             self.label_porcent["text"] = "0%"
             self.change_button_action_state(True)
-            Log.save(f"{ex}")
+            LogService.save(f"{ex}")
             messagebox.showerror(title="Erro", message=ex)
         finally:
             self.enviar = False
@@ -387,35 +387,36 @@ class MainForm(ttk.Frame):
 
     def exibir_messagebox_concluido(self, result_destino1, result_destino2):
         if self.configuration["habilitar_servidor2"] == 0 and result_destino1:
-            Log.save(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para {self.configuration['servidor']}")
+            LogService.save(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso "
+                            f"para {self.configuration['servidor']}")
             messagebox.showinfo(title="Atenção", message=f"Arquivo {self.titulo.get()}.mxf "
                                                          f"transferido com sucesso!")
         elif self.configuration["habilitar_servidor2"] == 0 and not result_destino1:
-            Log.save("Falha ao transferir arquivo.")
+            LogService.save("Falha ao transferir arquivo.")
             messagebox.showinfo(title="Atenção", message="Falha ao transferir arquivo.")
         elif result_destino1 and result_destino2:
-            Log.save(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
-                     f"{self.configuration['servidor']} e para {self.configuration['servidor2']}")
+            LogService.save(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
+                            f"{self.configuration['servidor']} e para {self.configuration['servidor2']}")
             messagebox.showinfo(title="Atenção", message=f"Arquivo {self.titulo.get()}.mxf "
                                                          f"transferido com sucesso para os dois destinos.")
         elif result_destino1:
-            Log.save(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
-                     f"{self.configuration['servidor']} mas apresentou falha o ser transferido para "
-                     f"{self.configuration['servidor2']}")
+            LogService.save(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
+                            f"{self.configuration['servidor']} mas apresentou falha o ser transferido para "
+                            f"{self.configuration['servidor2']}")
             messagebox.showwarning(title="Atenção",
                                    message=f"Arquivo {self.titulo.get()}.mxf "
                                            f"transferido com sucesso para o destino 1 mas "
                                            f"apresentou falha ao ser transferido ao destino 2.")
         elif result_destino2:
-            Log.save(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
-                     f"{self.configuration['servidor2']} mas apresentou falha o ser transferido para "
-                     f"{self.configuration['servidor']}")
+            LogService.save(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
+                            f"{self.configuration['servidor2']} mas apresentou falha o ser transferido para "
+                            f"{self.configuration['servidor']}")
             messagebox.showwarning(title="Atenção",
                                    message=f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para o "
                                            f"destino 2 mas apresentou falha ao ser transferido ao destino 1.")
         else:
-            Log.save(f"Falha ao transferir arquivo {self.titulo.get()}.mxf para "
-                     f"{self.configuration['servidor']} e para {self.configuration['servidor2']}.")
+            LogService.save(f"Falha ao transferir arquivo {self.titulo.get()}.mxf para "
+                            f"{self.configuration['servidor']} e para {self.configuration['servidor2']}.")
             messagebox.showwarning(title="Atenção",
                                    message=f"Falha ao transferir arquivo para os dois destinos selecionados.")
 

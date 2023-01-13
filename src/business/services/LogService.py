@@ -2,7 +2,7 @@ import datetime
 from src.data.repository.LogRepository import LogRepository
 
 
-class Log:
+class LogService:
     @staticmethod
     def save(message: str):
         try:

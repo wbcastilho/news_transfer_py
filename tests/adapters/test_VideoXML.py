@@ -1,5 +1,5 @@
 import unittest
-from src.adapters.VideoXML import VideoXML
+from src.business.adapters.VideoXML import VideoXML
 
 
 class TestVideoXML(unittest.TestCase):

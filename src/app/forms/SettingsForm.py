@@ -2,7 +2,7 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from tkinter import filedialog
 from tkinter import messagebox
-from src.adapters.MyJSON import MyJSON
+from src.business.adapters.MyJSON import MyJSON
 
 
 class SettingsForm(ttk.Frame):

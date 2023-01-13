@@ -1,5 +1,5 @@
 import unittest
-from src.adapters.MyRandom import MyRandom
+from src.business.adapters.MyRandom import MyRandom
 
 
 class TestMyJSON(unittest.TestCase):

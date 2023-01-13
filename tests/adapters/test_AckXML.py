@@ -1,5 +1,5 @@
 import unittest
-from src.adapters.AckXML import AckXML
+from src.business.adapters.AckXML import AckXML
 
 
 class TestAckXML(unittest.TestCase):

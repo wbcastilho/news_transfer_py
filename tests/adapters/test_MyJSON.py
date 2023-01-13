@@ -1,5 +1,5 @@
 import unittest
-from src.adapters.MyJSON import MyJSON
+from src.business.adapters.MyJSON import MyJSON
 
 
 class TestMyJSON(unittest.TestCase):
