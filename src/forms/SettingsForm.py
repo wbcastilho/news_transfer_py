@@ -80,7 +80,7 @@ class SettingsForm(ttk.Frame):
         frame = ttk.Frame(label_frame)
         frame.pack(fill="x", padx=20, pady=10)
 
-        label = ttk.Label(frame, text="Timeout Arquivo de Checagem")
+        label = ttk.Label(frame, text="Timeout Checagem")
         label.grid(row=0, column=0, padx=1, pady=(20, 0), sticky=ttk.E)
 
         spinbox_timeout = ttk.Spinbox(frame, width=5, justify="center", from_=1, to=20,
