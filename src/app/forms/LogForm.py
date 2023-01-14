@@ -10,11 +10,22 @@ class LogsForm(ttk.Frame):
         self.master = master
 
         self.treeview = None
+        self.data_entry = None
+        self.datevar = ttk.StringVar()
 
         self.create_table()
         self.load_data()
 
     def create_table(self):
+        frame = ttk.Frame(self)
+        frame.pack(fill="x", padx=(0, 20), pady=10)
+
+        self.data_entry = ttk.DateEntry(frame, bootstyle="primary")
+        self.data_entry.pack(padx=10, pady=5, side=LEFT)
+
+        button = ttk.Button(frame, text="Pesquisar", bootstyle="primary", command=self.select_date)
+        button.pack(side=LEFT)
+
         self.treeview = ttk.Treeview(self,
                                      bootstyle='primary',
                                      columns=('data', 'log'),
@@ -38,9 +49,22 @@ class LogsForm(ttk.Frame):
 
         self.treeview.pack()
 
+    def select_date(self):
+        print(self.data_entry.entry.get())
+        print(type(self.data_entry.entry.get()))
+
+        self.clear_treeview()
+
+        for log in LogRepository.find(self.data_entry.entry.get()):
+            self.treeview.insert('', END, log.id, values=(log.datetime, log.message))
+
     def load_data(self):
         for log in LogRepository.all():
             self.treeview.insert('', END, log.id, values=(log.datetime, log.message))
+
+    def clear_treeview(self):
+        for item in self.treeview.get_children():
+            self.treeview.delete(item)
 
 
 

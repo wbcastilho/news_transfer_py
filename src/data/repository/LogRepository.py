@@ -13,3 +13,7 @@ class LogRepository:
     @staticmethod
     def all():
         return Log.select().order_by(Log.id.desc())
+
+    @staticmethod
+    def find(date):
+        return Log.select().where(Log.datetime >= date).order_by(Log.id.desc())
