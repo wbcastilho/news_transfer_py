@@ -27,7 +27,7 @@ github.
 ### Executando todos os testes do Unittest
 python -m unittest -v
 
-### Gerando o instalador com pyinstaller
+### Gerando o executável com pyinstaller
 pyinstaller --noconsole --name="NewsTransfer" --add-data="src\app\assets;.\src\app\assets" --icon=src\app\assets\favicon.ico --collect-all "ttkbootstrap" --collect-all "peewee" main.py
 
 #### Parâmetros
@@ -40,3 +40,6 @@ pyinstaller --noconsole --name="NewsTransfer" --add-data="src\app\assets;.\src\a
 --icon: icone da aplicação
 
 --collect-all: copia tudo sobre o módulo especificado
+
+#### Observação quanto a geração do executável
+Depois de gerado o executável é necessário copiar o ffmpeg.exe para dentro da pasta NewsTransfer que contém o executável NewsTransfer.exe.
