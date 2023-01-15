@@ -50,9 +50,10 @@ class LogsForm(ttk.Frame):
         self.treeview.pack()
 
     def select_date(self):
-        self.clear_treeview()
+        data_selecionada = self.data_entry.entry.get()
 
-        for log in LogRepository.find(self.data_entry.entry.get()):
+        self.clear_treeview()
+        for log in LogRepository.find(data_selecionada):
             self.treeview.insert('', END, log.id, values=(log.datetime, log.message))
 
     def clear_treeview(self):
