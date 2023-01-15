@@ -18,6 +18,7 @@ via comando.
 * ttkbootstrap - Bootstrap para tkinter
 * Pillow - Manipulação de imagens
 * peewee - ORM
+* pyinstaller - Gera o executável
 
 ### Observação
 Copiar o arquivo ffmpeg.exe para a pasta raiz do programa. Por causa do tamanho do arquivo não possível subir para o 
@@ -25,3 +26,17 @@ github.
 
 ### Executando todos os testes do Unittest
 python -m unittest -v
+
+### Gerando o instalador com pyinstaller
+pyinstaller --noconsole --name="NewsTransfer" --add-data="src\app\assets;.\src\app\assets" --icon=src\app\assets\favicon.ico --collect-all "ttkbootstrap" --collect-all "peewee" main.py
+
+#### Parâmetros
+--noconsole: não exibe a janela de console
+
+--name: nome da aplicação
+
+--add-data: copia a pasta de assets
+
+--icon: icone da aplicação
+
+--collect-all: copia tudo sobre o módulo especificado

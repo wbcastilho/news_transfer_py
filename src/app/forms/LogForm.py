@@ -46,7 +46,6 @@ class LogsForm(ttk.Frame):
         xscroll.pack(side=BOTTOM, fill=X)
 
         self.treeview.configure(yscrollcommand=yscroll.set, xscrollcommand=xscroll.set)
-
         self.treeview.pack()
 
     def select_date(self):
