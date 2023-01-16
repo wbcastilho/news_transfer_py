@@ -8,8 +8,8 @@ class LogRepository:
         Log.create_table()
 
     @staticmethod
-    def insert(data, message):
-        Log.create(datetime=data, message=message)
+    def insert(data, type_log, message):
+        Log.create(datetime=data, type_log=type_log, message=message)
 
     @staticmethod
     def all():

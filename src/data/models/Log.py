@@ -5,4 +5,5 @@ from peewee import TextField, DateTimeField, AutoField
 class Log(BaseModel):
     id = AutoField()
     datetime = DateTimeField()
+    type_log = TextField()
     message = TextField()

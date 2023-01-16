@@ -28,16 +28,18 @@ class LogsForm(ttk.Frame):
 
         self.treeview = ttk.Treeview(self,
                                      bootstyle='primary',
-                                     columns=('data', 'log'),
+                                     columns=('data', 'type_log', 'log'),
                                      show='headings',
                                      height=20,
                                      selectmode='browse')
 
         self.treeview.heading('data', text='Data', anchor=W)
+        self.treeview.heading('type_log', text='Tipo', anchor=W)
         self.treeview.heading('log', text='Mensagem', anchor=W)
 
-        self.treeview.column('data', stretch=False, width=150)
-        self.treeview.column('log', stretch=False, width=1050)
+        self.treeview.column('data', stretch=False, width=130)
+        self.treeview.column('type_log', stretch=False, width=80)
+        self.treeview.column('log', stretch=False, width=1000)
 
         yscroll = ttk.Scrollbar(self, orient=VERTICAL, command=self.treeview.yview)
         yscroll.pack(side=RIGHT, fill=Y)
@@ -56,7 +58,10 @@ class LogsForm(ttk.Frame):
 
         self.clear_treeview()
         for log in LogRepository.find(data_selecionada):
-            self.treeview.insert('', END, log.id, values=(log.datetime, log.message), tags=('error',))
+            self.treeview.insert('',
+                                 END, log.id,
+                                 values=(log.datetime, log.type_log.capitalize(), log.message),
+                                 tags=(log.type_log,))
 
     def clear_treeview(self):
         for item in self.treeview.get_children():
