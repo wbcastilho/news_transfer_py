@@ -46,6 +46,9 @@ class LogsForm(ttk.Frame):
         xscroll.pack(side=BOTTOM, fill=X)
 
         self.treeview.configure(yscrollcommand=yscroll.set, xscrollcommand=xscroll.set)
+        self.treeview.tag_configure('info', background='LightSteelBlue1')
+        self.treeview.tag_configure('warning', background='gold')
+        self.treeview.tag_configure('error', background='brown1')
         self.treeview.pack()
 
     def select_date(self):
@@ -53,7 +56,7 @@ class LogsForm(ttk.Frame):
 
         self.clear_treeview()
         for log in LogRepository.find(data_selecionada):
-            self.treeview.insert('', END, log.id, values=(log.datetime, log.message))
+            self.treeview.insert('', END, log.id, values=(log.datetime, log.message), tags=('error',))
 
     def clear_treeview(self):
         for item in self.treeview.get_children():
