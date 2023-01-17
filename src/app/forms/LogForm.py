@@ -33,25 +33,33 @@ class LogsForm(ttk.Frame):
                                      height=20,
                                      selectmode='browse')
 
+        # configuracao cabecalho
         self.treeview.heading('data', text='Data', anchor=W)
         self.treeview.heading('type_log', text='Tipo', anchor=W)
         self.treeview.heading('log', text='Mensagem', anchor=W)
 
+        # configuracao colunas
         self.treeview.column('data', stretch=False, width=130)
         self.treeview.column('type_log', stretch=False, width=80)
         self.treeview.column('log', stretch=False, width=1000)
 
+        # configuracao yscroll
         yscroll = ttk.Scrollbar(self, orient=VERTICAL, command=self.treeview.yview)
         yscroll.pack(side=RIGHT, fill=Y)
 
+        # configuracao xscroll
         xscroll = ttk.Scrollbar(self, orient=HORIZONTAL, command=self.treeview.xview)
         xscroll.pack(side=BOTTOM, fill=X)
 
+        # configuracao scroll
         self.treeview.configure(yscrollcommand=yscroll.set, xscrollcommand=xscroll.set)
+
+        # configuracao cor das linhas
         self.treeview.tag_configure('info', background='LightSteelBlue1')
         self.treeview.tag_configure('warning', background='gold')
         self.treeview.tag_configure('error', background='brown1')
-        self.treeview.pack()
+
+        self.treeview.pack(expand=YES, fill=BOTH)
 
     def select_date(self):
         data_selecionada = self.data_entry.entry.get()
