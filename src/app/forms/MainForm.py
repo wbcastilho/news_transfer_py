@@ -234,14 +234,11 @@ class MainForm(ttk.Frame):
                 self.exibir_messagebox_concluido(result_destino1, result_destino2)
                 self.clean_fields()
             else:
+                self.excluir_arquivos_servidores()
                 LogService.save_warning(f"Transferência cancelada pelo usuário.")
                 messagebox.showwarning(title="Atenção", message="Transferência cancelada pelo usuário.")
         except Exception as ex:
-            self.excluir_arquivos(self.configuration["servidor"], self.titulo.get())
-
-            if self.configuration["habilitar_servidor2"] == 1:
-                self.excluir_arquivos(self.configuration["servidor2"], self.titulo.get())
-
+            self.excluir_arquivos_servidores()
             self.show_progressbar(False)
             self.set_progressbar_determinate(True)
             self.label_porcent["text"] = "0%"
@@ -422,6 +419,12 @@ class MainForm(ttk.Frame):
                                  f"{self.configuration['servidor']} e para {self.configuration['servidor2']}.")
             messagebox.showwarning(title="Atenção",
                                    message=f"Falha ao transferir arquivo para os dois destinos selecionados.")
+
+    def excluir_arquivos_servidores(self):
+        self.excluir_arquivos(self.configuration["servidor"], self.titulo.get())
+
+        if self.configuration["habilitar_servidor2"] == 1:
+            self.excluir_arquivos(self.configuration["servidor2"], self.titulo.get())
 
     @staticmethod
     def excluir_arquivos(caminho, nome_arquivo):
