@@ -17,7 +17,6 @@ class LogsForm(ttk.Frame):
 
         self.create_table()
         self.select_date()
-        # self.select_test()
 
     def create_table(self):
         frame = ttk.Frame(self)
@@ -101,37 +100,6 @@ class LogsForm(ttk.Frame):
 
         '''if not show_xscroll:
             self.xscroll.pack_forget()'''
-
-    def select_test(self):
-        # self.treeview.configure(yscrollcommand=self.yscroll.set)
-
-        # self.yscroll.pack_forget()
-        # self.xscroll.pack_forget()
-
-        self.clear_treeview()
-
-        self.treeview.insert('', END, 0, values=('18/01/2023 19:06:00', 'Error',
-                                                 '01234567890123456789012345678901234567890123456789'
-                                                 '01234567890123456789012345678901234567890'))
-        self.treeview.insert('', END, 1, values=('18/01/2023 19:07:00', 'Error', 'Teste'))
-        self.treeview.insert('', END, 2, values=('18/01/2023 19:08:00', 'Error', 'Teste'))
-        self.treeview.insert('', END, 3, values=('18/01/2023 19:09:00', 'Error', 'Teste'))
-        self.treeview.insert('', END, 4, values=('18/01/2023 19:10:00', 'Error', 'Teste'))
-        self.treeview.insert('', END, 5, values=('18/01/2023 19:11:00', 'Error', 'Teste'))
-        self.treeview.insert('', END, 6, values=('18/01/2023 19:11:00', 'Error', 'Teste'))
-        self.treeview.insert('', END, 7, values=('18/01/2023 19:11:00', 'Error', 'Teste'))
-        self.treeview.insert('', END, 8, values=('18/01/2023 19:11:00', 'Error', 'Teste'))
-        '''self.treeview.insert('', END, 9, values=('18/01/2023 19:11:00', 'Error', 'Teste'))
-        self.treeview.insert('', END, 10, values=('18/01/2023 19:11:00', 'Error', 'Teste'))
-        self.treeview.insert('', END, 11, values=('18/01/2023 19:11:00', 'Error', 'Teste'))
-        self.treeview.insert('', END, 12, values=('18/01/2023 19:11:00', 'Error', 'Teste'))
-        self.treeview.insert('', END, 13, values=('18/01/2023 19:11:00', 'Error', 'Teste'))
-        self.treeview.insert('', END, 14, values=('18/01/2023 19:11:00', 'Error', 'Teste'))
-        self.treeview.insert('', END, 15, values=('18/01/2023 19:11:00', 'Error', 'Teste'))
-        self.treeview.insert('', END, 16, values=('18/01/2023 19:11:00', 'Error', 'Teste'))
-        self.treeview.insert('', END, 17, values=('18/01/2023 19:11:00', 'Error', 'Teste'))
-        self.treeview.insert('', END, 18, values=('18/01/2023 19:11:01', 'Error', 'Teste'))
-        self.treeview.insert('', END, 19, values=('18/01/2023 19:11:02', 'Error', 'Teste'))'''
 
     def clear_treeview(self):
         for item in self.treeview.get_children():
