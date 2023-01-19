@@ -216,10 +216,12 @@ class MainForm(ttk.Frame):
         result_destino2 = False
 
         try:
-            self.copiar_arquivo_e_gerar_xml(self.configuration["servidor"], self.titulo.get(), self.arquivo.get())
+            self.copiar_arquivo_e_gerar_xml(self.configuration["servidor"], self.titulo.get(), self.arquivo.get(),
+                                            "Servidor 1")
 
             if self.configuration["habilitar_servidor2"] == 1:
-                self.copiar_arquivo_e_gerar_xml(self.configuration["servidor2"], self.titulo.get(), self.arquivo.get())
+                self.copiar_arquivo_e_gerar_xml(self.configuration["servidor2"], self.titulo.get(), self.arquivo.get(),
+                                                "Servidor 2")
 
             result_destino1 = self.checar_ack(self.configuration["servidor"], self.titulo.get())
 
@@ -248,17 +250,18 @@ class MainForm(ttk.Frame):
         finally:
             self.enviar = False
 
-    def copiar_arquivo_e_gerar_xml(self, destino, titulo, arquivo):
+    def copiar_arquivo_e_gerar_xml(self, destino, titulo, arquivo, server):
         self.update_label_progressbar(True, "0%")
         self.copy_with_callback(arquivo,
                                 f'{destino}\\{titulo}.mxf',
+                                server,
                                 follow_symlinks=False,
                                 callback=None
                                 )
-        self.update_label_progressbar(False, "Gerando arquivo xml...")
+        self.update_label_progressbar(False, f"Gerando arquivo xml {server}")
         self.gerar_xml(destino, titulo, arquivo)
 
-    def copy_with_callback(self, src, dest, callback=None, follow_symlinks=True):
+    def copy_with_callback(self, src, dest, server, callback=None, follow_symlinks=True):
         try:
             buffer_size = 4096 * 1024
             srcfile = pathlib.Path(src)
@@ -297,14 +300,14 @@ class MainForm(ttk.Frame):
                 with open(srcfile, "rb") as fsrc:
                     with open(destfile, "wb") as fdest:
                         self.copy_file(
-                            fsrc, fdest, callback=callback, total=size, length=buffer_size
+                            fsrc, fdest, server, callback=callback, total=size, length=buffer_size
                         )
             shutil.copymode(str(srcfile), str(destfile))
             return str(destfile)
         except Exception as ex:
             raise Exception(f"Falha ao copiar arquivo. {ex}")
 
-    def copy_file(self, fsrc, fdest, callback, total, length):
+    def copy_file(self, fsrc, fdest, server, callback, total, length):
         copied = 0
         while True:
             if not self.enviar:
@@ -319,7 +322,7 @@ class MainForm(ttk.Frame):
             fdest.write(buf)
             copied += len(buf)
 
-            self.update_progress(copied, total)
+            self.update_progress(copied, total, server)
 
             if callback is not None:
                 callback(len(buf), copied, total)
@@ -433,11 +436,11 @@ class MainForm(ttk.Frame):
         file.excluir_arquivo_xml(caminho, nome_arquivo)
         file.excluir_arquivo_ack(caminho, nome_arquivo)
 
-    def update_progress(self, copied: float, total: float) -> None:
+    def update_progress(self, copied: float, total: float, server: str) -> None:
         porcent = int((copied * 100) / total)
         if self.progressbar['value'] < 100:
             self.progressbar['value'] = porcent
-            self.label_porcent["text"] = f"{porcent}%"
+            self.label_porcent["text"] = f"{porcent}% - Transferindo para {server}"
 
     def show_progressbar(self, value: bool) -> None:
         if value:
