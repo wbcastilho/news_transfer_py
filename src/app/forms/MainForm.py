@@ -332,7 +332,7 @@ class MainForm(ttk.Frame):
         try:
             dto = {
                 'codigo': MyRandom.gerar_codigo(),
-                'arquivo': titulo,
+                'arquivo': f"{titulo}.mxf",
                 'titulo': titulo,
                 'grupo': 'Editores',
                 'operador': 'Operador',
@@ -464,8 +464,10 @@ class MainForm(ttk.Frame):
     def change_button_action_state(self, value: bool) -> None:
         if value:
             self.button_action['text'] = 'Enviar ao servidor'
+            self.button_action.configure(bootstyle="primary")
         else:
             self.button_action['text'] = 'Parar transferência'
+            self.button_action.configure(bootstyle="danger")
 
     def clean_fields(self) -> None:
         self.arquivo.set("")
