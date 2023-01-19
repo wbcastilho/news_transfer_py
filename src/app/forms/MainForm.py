@@ -482,7 +482,8 @@ class MainForm(ttk.Frame):
         if self.arquivo.get() is None or self.arquivo.get() == "":
             messagebox.showwarning(title="Atenção", message="O campo arquivo deve ser selecionado.")
             return False
-        if MyFile.extensao_arquivo(self.arquivo.get()) != ".MXF":
+        if MyFile.extensao_arquivo(self.arquivo.get()) != ".MXF" \
+                and MyFile.extensao_arquivo(self.arquivo.get()) != ".mxf":
             messagebox.showwarning(title="Atenção", message="O arquivo selecionado deve ser um arquivo com extensão "
                                                             ".mxf.")
             return False
