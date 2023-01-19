@@ -67,7 +67,6 @@ class LogsForm(ttk.Frame):
     def select_date(self):
         maior = 0
         i = 0
-        # show_xscroll = False
 
         data_selecionada = self.data_entry.entry.get()
         self.clear_treeview()
@@ -82,7 +81,6 @@ class LogsForm(ttk.Frame):
             if tamanho > maior:
                 maior = tamanho
                 if tamanho > 90:
-                    # show_xscroll = True
                     x = (600 * tamanho // 100)
                     self.treeview.column('log', stretch=False, width=x)
 
@@ -97,11 +95,6 @@ class LogsForm(ttk.Frame):
                                      values=(log.datetime, log.type_log.capitalize(), log.message),
                                      tags=("odd", log.type_log,))
             i = i + 1
-
-        '''if show_xscroll:
-            self.xscroll.pack(side=BOTTOM, fill=X)
-        else:
-            self.xscroll.pack_forget()'''
 
     def clear_treeview(self):
         for item in self.treeview.get_children():
