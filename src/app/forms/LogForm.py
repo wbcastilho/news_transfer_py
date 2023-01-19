@@ -68,10 +68,10 @@ class LogsForm(ttk.Frame):
         maior = 0
         i = 0
         # show_xscroll = False
-        self.treeview.column('log', stretch=False, width=600)
-        data_selecionada = self.data_entry.entry.get()
 
+        data_selecionada = self.data_entry.entry.get()
         self.clear_treeview()
+        self.treeview.column('log', stretch=False, width=600)
         logs = LogRepository.find(data_selecionada)
 
         if len(logs) < 19:
@@ -81,7 +81,7 @@ class LogsForm(ttk.Frame):
             tamanho = len(log.message)
             if tamanho > maior:
                 maior = tamanho
-                if tamanho > 100:
+                if tamanho > 90:
                     # show_xscroll = True
                     x = (600 * tamanho // 100)
                     self.treeview.column('log', stretch=False, width=x)
@@ -98,7 +98,9 @@ class LogsForm(ttk.Frame):
                                      tags=("odd", log.type_log,))
             i = i + 1
 
-        '''if not show_xscroll:
+        '''if show_xscroll:
+            self.xscroll.pack(side=BOTTOM, fill=X)
+        else:
             self.xscroll.pack_forget()'''
 
     def clear_treeview(self):
