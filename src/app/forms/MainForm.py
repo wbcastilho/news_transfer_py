@@ -38,7 +38,8 @@ class MainForm(ttk.Frame):
             'servidor': "",
             'servidor2': "",
             'habilitar_servidor2': 0,
-            'timeout_ack': 15
+            'timeout_ack': 15,
+            'usuario': ""
         }
         self.photo_images = []
         self.enviar = False
@@ -327,14 +328,13 @@ class MainForm(ttk.Frame):
             if callback is not None:
                 callback(len(buf), copied, total)
 
-    @staticmethod
-    def gerar_xml(servidor, titulo, arquivo):
+    def gerar_xml(self, servidor, titulo, arquivo):
         try:
             dto = {
                 'codigo': MyRandom.gerar_codigo(),
                 'arquivo': f"{titulo}.mxf",
                 'titulo': titulo,
-                'grupo': 'Editores',
+                'grupo': self.configuration["usuario"],
                 'operador': 'Operador',
                 'markIn': '000',
                 'markOut': ConvertVideo.get_duration(arquivo),
@@ -476,8 +476,11 @@ class MainForm(ttk.Frame):
 
     def validate(self) -> bool:
         if self.configuration["servidor"] is None or self.configuration["servidor"] == "":
-            messagebox.showwarning(title="Atenção", message="Em configurações todos os campos devem ser "
-                                                            "preenchidos.")
+            messagebox.showwarning(title="Atenção", message="Em configurações o campo Caminho Servidor 1 devem ser "
+                                                            "preenchido.")
+            return False
+        if self.configuration["usuario"] is None or self.configuration["usuario"] == "":
+            messagebox.showwarning(title="Atenção", message="Em configurações o campo Usuário devem ser preenchido.")
             return False
         if self.arquivo.get() is None or self.arquivo.get() == "":
             messagebox.showwarning(title="Atenção", message="O campo arquivo deve ser selecionado.")

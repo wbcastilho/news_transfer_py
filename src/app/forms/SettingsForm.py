@@ -15,7 +15,8 @@ class SettingsForm(ttk.Frame):
             'servidor': ttk.StringVar(),
             'habilitar_servidor2': ttk.IntVar(),
             'servidor2': ttk.StringVar(),
-            'timeout_ack': ttk.IntVar()
+            'timeout_ack': ttk.IntVar(),
+            'usuario': ttk.StringVar()
         }
         self.button_save = None
         self.button_cancel = None
@@ -80,12 +81,21 @@ class SettingsForm(ttk.Frame):
         frame = ttk.Frame(label_frame)
         frame.pack(fill="x", padx=20, pady=10)
 
-        label = ttk.Label(frame, text="Timeout Checagem (minutos)")
-        label.grid(row=0, column=0, padx=1, pady=(20, 0), sticky=ttk.E)
+        label = ttk.Label(frame, text="Usuário")
+        label.grid(row=0, column=0, padx=1, sticky=ttk.E, pady=5)
+
+        entry_usuario = ttk.Entry(frame,
+                                  textvariable=self.local_configuration['usuario'],
+                                  width=60
+                                  )
+        entry_usuario.grid(row=0, column=1, padx=2, sticky=ttk.W, pady=5)
+
+        label = ttk.Label(frame, text="Timeout ACK (minutos)")
+        label.grid(row=1, column=0, padx=1, pady=(20, 0), sticky=ttk.E)
 
         spinbox_timeout = ttk.Spinbox(frame, width=5, justify="center", from_=1, to=20,
                                       textvariable=self.local_configuration["timeout_ack"], wrap=False)
-        spinbox_timeout.grid(row=0, column=1, padx=2, pady=(20, 0), sticky=ttk.W)
+        spinbox_timeout.grid(row=1, column=1, padx=2, pady=(20, 0), sticky=ttk.W)
 
     def create_buttons(self) -> None:
         frame = ttk.Frame(self)
@@ -129,12 +139,14 @@ class SettingsForm(ttk.Frame):
         self.local_configuration["servidor2"].set(self.configuration["servidor2"])
         self.local_configuration["habilitar_servidor2"].set(self.configuration["habilitar_servidor2"])
         self.local_configuration["timeout_ack"].set(self.configuration["timeout_ack"])
+        self.local_configuration["usuario"].set(self.configuration["usuario"])
 
     def change_configuration(self) -> None:
         self.configuration["servidor"] = self.local_configuration["servidor"].get()
         self.configuration["servidor2"] = self.local_configuration["servidor2"].get()
         self.configuration["habilitar_servidor2"] = self.local_configuration["habilitar_servidor2"].get()
         self.configuration["timeout_ack"] = self.local_configuration["timeout_ack"].get()
+        self.configuration["usuario"] = self.local_configuration["usuario"].get()
 
     def validate(self) -> bool:
         if self.local_configuration["servidor"].get() == "":
@@ -146,6 +158,9 @@ class SettingsForm(ttk.Frame):
         if self.local_configuration["servidor"].get() == self.local_configuration["servidor2"].get():
             messagebox.showwarning(title="Atenção", message="O campo Caminho Destino 1 deve ser diferente do campo "
                                                             "Caminho Destino 2 deve ser preenchido.")
+            return False
+        if self.local_configuration["usuario"].get() == "":
+            messagebox.showwarning(title="Atenção", message="O campo Usuário deve ser preenchido.")
             return False
         return True
 
