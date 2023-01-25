@@ -11,7 +11,8 @@ class ConvertVideo:
             raise FileNotFoundError(f"Falha ao encontrar executável {convert_file}")
 
         command = ['ffmpeg', '-i', video_file]
-        ffmpeg = subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        ffmpeg = subprocess.Popen(command, shell=False, stderr=subprocess.PIPE, stdout=subprocess.PIPE,
+                                  creationflags=subprocess.CREATE_NO_WINDOW)
         result = ffmpeg.communicate()
         str_result = result[1].decode("utf-8")
         position = str_result.find("Duration")
