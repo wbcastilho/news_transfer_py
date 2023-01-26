@@ -16,11 +16,11 @@ via comando.
 
 ### Pacotes importados
 * ttkbootstrap - Bootstrap para tkinter
-* Pillow - Manipulação de imagens
+* Pillow - Manipulação de imagens, aqui utiizado para os ícones
 * peewee - ORM
 * pyinstaller - Gera o executável
 
-### Observação
+### Observação quanto ao desenvolvimento
 Copiar o arquivo ffmpeg.exe para a pasta raiz do programa. Por causa do tamanho do arquivo não possível subir para o 
 github.
 
@@ -28,7 +28,7 @@ github.
 python -m unittest -v
 
 ### Gerando o executável com pyinstaller
-pyinstaller --noconsole --name="NewsTransfer" --add-data="src\app\assets;.\src\app\assets" --icon=src\app\assets\favicon.ico --collect-all "ttkbootstrap" --collect-all "peewee" main.py
+pyinstaller --noconsole --name="NewsTransferPy" --add-data="src\app\assets;.\src\app\assets" --icon=src\app\assets\favicon.ico --collect-all "ttkbootstrap" --collect-all "peewee" main.py
 
 #### Parâmetros
 --noconsole: não exibe a janela de console
@@ -42,4 +42,4 @@ pyinstaller --noconsole --name="NewsTransfer" --add-data="src\app\assets;.\src\a
 --collect-all: copia tudo sobre o módulo especificado
 
 #### Observação quanto a geração do executável
-Depois de gerado o executável é necessário copiar o ffmpeg.exe para dentro da pasta NewsTransfer que contém o executável NewsTransfer.exe.
+Depois de gerado o executável é necessário copiar o ffmpeg.exe para dentro da pasta NewsTransferPy que contém o executável NewsTransferPy.exe.
