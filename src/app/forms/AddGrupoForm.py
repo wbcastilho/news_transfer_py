@@ -19,8 +19,15 @@ class AddGrupoForm(ttk.Frame):
         self.button_browse2 = None
         self.treeview = None
 
+        self.init_style()
         self.create_config_frame()
         self.create_buttons()
+
+    @staticmethod
+    def init_style():
+        my_style = ttk.Style()
+        my_style.configure('danger.TButton', font=('Helvetica', 10))
+        my_style.configure('success.TButton', font=('Helvetica', 10))
 
     def create_config_frame(self) -> None:
         label_frame = ttk.Labelframe(self, text='Grupo')
@@ -29,12 +36,13 @@ class AddGrupoForm(ttk.Frame):
         frame = ttk.Frame(label_frame)
         frame.pack(fill="x", padx=20, pady=10)
 
-        label = ttk.Label(frame, text="Nome")
+        label = ttk.Label(frame, text="Nome", font=('Helvetica', 10))
         label.grid(row=0, column=0, padx=1, sticky=ttk.E, pady=5)
 
         entry_servidor = ttk.Entry(frame,
                                    textvariable=self.nome_grupo,
-                                   width=60
+                                   width=60,
+                                   font=('Helvetica', 10)
                                    )
         entry_servidor.grid(row=0, column=1, padx=2, sticky=ttk.W, pady=5)
 
@@ -42,10 +50,12 @@ class AddGrupoForm(ttk.Frame):
         frame = ttk.Frame(self)
         frame.pack(fill="x", padx=10, pady=5)
 
-        self.button_cancel = ttk.Button(frame, text="Cancelar", bootstyle="secondary", command=self.on_cancel)
+        self.button_cancel = ttk.Button(frame, text="Cancelar", bootstyle="secondary", style='danger.TButton',
+                                        command=self.on_cancel)
         self.button_cancel.pack(side=RIGHT, padx=5, pady=10)
 
-        self.button_save = ttk.Button(frame, text="Adicionar", bootstyle="success", command=self.on_save)
+        self.button_save = ttk.Button(frame, text="Adicionar", bootstyle="success", style='success.TButton',
+                                      command=self.on_save)
         self.button_save.pack(side=RIGHT, padx=5, pady=10)
 
     def on_save(self) -> None:

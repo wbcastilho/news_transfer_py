@@ -24,10 +24,20 @@ class SettingsForm(ttk.Frame):
         self.button_browse2 = None
         self.treeview = None
 
+        self.init_style()
         self.create_config_frame()
         self.create_buttons()
         self.select_checkbutton()
         self.init_configuration()
+
+    @staticmethod
+    def init_style():
+        my_style = ttk.Style()
+        my_style.configure('primary.TButton', font=('Helvetica', 10))
+        my_style.configure('danger.TButton', font=('Helvetica', 10))
+        my_style.configure('success.TButton', font=('Helvetica', 10))
+        my_style.configure('secondary.TButton', font=('Helvetica', 10))
+        my_style.configure('info.Outline.TButton', font=('Helvetica', 10))
 
     def create_config_frame(self) -> None:
         label_frame = ttk.Labelframe(self, text='Configuração Servidor 1')
@@ -36,18 +46,19 @@ class SettingsForm(ttk.Frame):
         frame = ttk.Frame(label_frame)
         frame.pack(fill="x", padx=20, pady=10)
 
-        label = ttk.Label(frame, text="Caminho")
+        label = ttk.Label(frame, text="Caminho", font=('Helvetica', 10))
         label.grid(row=0, column=0, padx=1, sticky=ttk.E, pady=5)
 
         entry_servidor = ttk.Entry(frame,
                                    textvariable=self.local_configuration['servidor'],
                                    width=100,
-                                   state="disabled"
+                                   state="disabled",
+                                   font=('Helvetica', 10)
                                    )
         entry_servidor.grid(row=0, column=1, padx=2, sticky=ttk.W, pady=5)
 
         button_browse = ttk.Button(frame, text="Selecionar Pasta", bootstyle=(INFO, OUTLINE),
-                                   command=lambda: self.on_browse(1))
+                                   style='info.Outline.TButton', command=lambda: self.on_browse(1))
         button_browse.grid(row=0, column=2, padx=2)
 
         label_frame = ttk.Labelframe(self, text='Configuração Servidor 2')
@@ -56,25 +67,27 @@ class SettingsForm(ttk.Frame):
         frame = ttk.Frame(label_frame)
         frame.pack(fill="x", padx=20, pady=10)
 
-        label = ttk.Label(frame, text="Habilitar")
+        label = ttk.Label(frame, text="Habilitar", font=('Helvetica', 10))
         label.grid(row=0, column=0, padx=1, sticky=ttk.E, pady=5)
 
         chk_habilitar = ttk.Checkbutton(frame, variable=self.local_configuration['habilitar_servidor2'],
                                         onvalue=1, offvalue=0, command=self.select_checkbutton)
         chk_habilitar.grid(row=0, column=1, padx=1, sticky=ttk.W, pady=5)
 
-        label = ttk.Label(frame, text="Caminho")
+        label = ttk.Label(frame, text="Caminho", font=('Helvetica', 10))
         label.grid(row=1, column=0, padx=1, sticky=ttk.E, pady=5)
 
         entry_servidor = ttk.Entry(frame,
                                    textvariable=self.local_configuration['servidor2'],
                                    width=100,
-                                   state="disabled"
+                                   state="disabled",
+                                   font=('Helvetica', 10)
                                    )
         entry_servidor.grid(row=1, column=1, padx=2, sticky=ttk.W, pady=5)
 
         self.button_browse2 = ttk.Button(frame, text="Selecionar Pasta", bootstyle=(INFO, OUTLINE),
-                                         state="disabled", command=lambda: self.on_browse(2))
+                                         state="disabled", style='info.Outline.TButton',
+                                         command=lambda: self.on_browse(2))
         self.button_browse2.grid(row=1, column=2, padx=2)
 
         label_frame = ttk.Labelframe(self, text='Configuração Geral')
@@ -83,16 +96,17 @@ class SettingsForm(ttk.Frame):
         frame = ttk.Frame(label_frame)
         frame.pack(fill="x", padx=20, pady=10)
 
-        label = ttk.Label(frame, text="Usuário")
+        label = ttk.Label(frame, text="Usuário", font=('Helvetica', 10))
         label.grid(row=0, column=0, padx=1, sticky=ttk.E, pady=5)
 
         entry_usuario = ttk.Entry(frame,
                                   textvariable=self.local_configuration['usuario'],
-                                  width=60
+                                  width=50,
+                                  font=('Helvetica', 10)
                                   )
         entry_usuario.grid(row=0, column=1, padx=2, sticky=ttk.W, pady=5)
 
-        label = ttk.Label(frame, text="Grupos")
+        label = ttk.Label(frame, text="Grupos", font=('Helvetica', 10))
         label.grid(row=1, column=0, padx=1, sticky=ttk.NE, pady=5)
 
         self.treeview = ttk.Treeview(frame,
@@ -108,27 +122,32 @@ class SettingsForm(ttk.Frame):
         frame_button = ttk.Frame(frame)
         frame_button.grid(row=1, column=2, padx=2, sticky=ttk.W, pady=5)
 
-        button_adicionar = ttk.Button(frame_button, text="Adicionar", bootstyle="primary", command=self.add)
+        button_adicionar = ttk.Button(frame_button, text="Adicionar", bootstyle="primary", style='primary.TButton',
+                                      command=self.add)
         button_adicionar.grid(row=0, column=0, padx=2, sticky=ttk.W, pady=5)
 
-        button_remover = ttk.Button(frame_button, text="Remover", bootstyle="danger", command=self.remove)
+        button_remover = ttk.Button(frame_button, text="Remover", bootstyle="danger", style='danger.TButton',
+                                    command=self.remove)
         button_remover.grid(row=1, column=0, padx=2, sticky=ttk.W, pady=5)
 
-        label = ttk.Label(frame, text="Timeout ACK (minutos)")
+        label = ttk.Label(frame, text="Timeout ACK (minutos)", font=('Helvetica', 10))
         label.grid(row=2, column=0, padx=1, pady=5, sticky=ttk.E)
 
         spinbox_timeout = ttk.Spinbox(frame, width=5, justify="center", from_=1, to=20,
-                                      textvariable=self.local_configuration["timeout_ack"], wrap=False)
+                                      textvariable=self.local_configuration["timeout_ack"], wrap=False,
+                                      font=('Helvetica', 10))
         spinbox_timeout.grid(row=2, column=1, padx=2, pady=5, sticky=ttk.W)
 
     def create_buttons(self) -> None:
         frame = ttk.Frame(self)
         frame.pack(fill="x", padx=10, pady=5)
 
-        self.button_cancel = ttk.Button(frame, text="Cancelar", bootstyle="secondary", command=self.on_cancel)
+        self.button_cancel = ttk.Button(frame, text="Cancelar", bootstyle="secondary", style='secondary.TButton',
+                                        command=self.on_cancel)
         self.button_cancel.pack(side=RIGHT, padx=5, pady=10)
 
-        self.button_save = ttk.Button(frame, text="Salvar", bootstyle="success", command=self.on_save)
+        self.button_save = ttk.Button(frame, text="Salvar", bootstyle="success", style='success.TButton',
+                                      command=self.on_save)
         self.button_save.pack(side=RIGHT, padx=5, pady=10)
 
     def select_checkbutton(self):
