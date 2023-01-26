@@ -90,8 +90,8 @@ class MainForm(ttk.Frame):
     @staticmethod
     def init_style():
         my_style = ttk.Style()
-        my_style.configure('primary.TButton', font=('Arial', 10))
-        my_style.configure('danger.TButton', font=('Arial', 10))
+        my_style.configure('primary.TButton', font=('Helvetica', 10))
+        my_style.configure('danger.TButton', font=('Helvetica', 10))
 
     def init_combobox(self) -> None:
         for item in self.configuration["grupos"]:
@@ -125,24 +125,24 @@ class MainForm(ttk.Frame):
         frame = ttk.Frame(label_frame)
         frame.pack(fill="x", padx=20, pady=15)
 
-        label = ttk.Label(frame, text="Arquivo", font=("Arial", 11))
+        label = ttk.Label(frame, text="Arquivo", font=("Helvetica", 11))
         label.grid(row=0, column=0, padx=1, sticky=ttk.E)
-        arquivo = ttk.Entry(frame, width=100, textvariable=self.arquivo, state="disabled", font=("Arial", 10))
+        arquivo = ttk.Entry(frame, width=100, textvariable=self.arquivo, state="disabled", font=("Helvetica", 10))
         arquivo.grid(row=0, column=1, padx=2, sticky=ttk.W)
         self.button_browse = ttk.Button(frame, text="Selecionar Arquivo", bootstyle=(INFO, OUTLINE),
                                         command=self.on_browse, style='primary.TButton')
         self.button_browse.grid(row=0, column=2, padx=2)
 
-        label = ttk.Label(frame, text="Retranca / Título", font=("Arial", 11))
+        label = ttk.Label(frame, text="Retranca / Título", font=("Helvetica", 11))
         label.grid(row=1, column=0, padx=1, pady=(20, 0), sticky=ttk.E)
-        self.entry_titulo = ttk.Entry(frame, width=50, textvariable=self.titulo, font=("Arial", 10))
+        self.entry_titulo = ttk.Entry(frame, width=50, textvariable=self.titulo, font=("Helvetica", 10))
         self.entry_titulo.grid(row=1, column=1, padx=2, pady=(20, 0), sticky=ttk.W)
         self.titulo.trace('w', self.transform_uppercase)
 
-        label = ttk.Label(frame, text="Grupo", font=("Arial", 11))
+        label = ttk.Label(frame, text="Grupo", font=("Helvetica", 11))
         label.grid(row=2, column=0, padx=1, pady=(20, 0), sticky=ttk.E)
         self.combobox_grupo = ttk.Combobox(frame, width=20, justify="center", textvariable=self.grupo,
-                                           font=("Arial", 10), values=self.grupo_values)
+                                           font=("Helvetica", 10), values=self.grupo_values)
         self.combobox_grupo.grid(row=2, column=1, padx=2, pady=(20, 0), sticky=ttk.W)
 
         self.button_action = ttk.Button(frame, width=80, text='Enviar ao servidor', command=lambda: self.on_action(),
