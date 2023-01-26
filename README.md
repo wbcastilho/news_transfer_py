@@ -20,10 +20,6 @@ via comando.
 * peewee - ORM
 * pyinstaller - Gera o executável
 
-### Observação quanto ao desenvolvimento
-Copiar o arquivo ffmpeg.exe para a pasta raiz do programa. Por causa do tamanho do arquivo não possível subir para o 
-github.
-
 ### Executando todos os testes do Unittest
 python -m unittest -v
 
@@ -41,5 +37,14 @@ pyinstaller --noconsole --name="NewsTransferPy" --add-data="src\app\assets;.\src
 
 --collect-all: copia tudo sobre o módulo especificado
 
-#### Observação quanto a geração do executável
+### Observação quanto ao desenvolvimento
+Copiar o arquivo ffmpeg.exe para a pasta raiz do programa. Por causa do tamanho do arquivo não possível subir para o 
+github.
+
+### Observação quanto a geração do executável
 Depois de gerado o executável é necessário copiar o ffmpeg.exe para dentro da pasta NewsTransferPy que contém o executável NewsTransferPy.exe.
+
+### Versão do ffmpeg utilizado
+ffmpeg version N-109430-g7af947c0c0-20221218 Copyright (c) 2000-2022 --extra-version=20221218
+
+A não utilização desta versão poderá impactar no método get_duration() da classe src\business\utils\ConvertVideo
