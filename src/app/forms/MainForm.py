@@ -7,6 +7,7 @@ from ttkbootstrap.constants import *
 from pathlib import Path
 import threading
 import os
+import tkinter.font as font
 
 from src.app.forms.LogForm import LogsForm
 from src.app.forms.SettingsForm import SettingsForm
@@ -52,10 +53,12 @@ class MainForm(ttk.Frame):
         self.grupo_values = []
         self.button_action = None
         self.button_browse = None
+        self.entry_titulo = None
         self.combobox_grupo = None
         self.progressbar = None
         self.label_porcent = None
 
+        self.init_style()
         self.init_database()
         self.read_config()
         self.init_combobox()
@@ -83,6 +86,12 @@ class MainForm(ttk.Frame):
         for key, val in image_files.items():
             _path = img_path / val
             self.photo_images.append(ttk.PhotoImage(name=key, file=_path))
+
+    @staticmethod
+    def init_style():
+        my_style = ttk.Style()
+        my_style.configure('primary.TButton', font=('Arial', 10))
+        my_style.configure('danger.TButton', font=('Arial', 10))
 
     def init_combobox(self) -> None:
         for item in self.configuration["grupos"]:
@@ -116,28 +125,29 @@ class MainForm(ttk.Frame):
         frame = ttk.Frame(label_frame)
         frame.pack(fill="x", padx=20, pady=15)
 
-        label = ttk.Label(frame, text="Arquivo")
+        label = ttk.Label(frame, text="Arquivo", font=("Arial", 11))
         label.grid(row=0, column=0, padx=1, sticky=ttk.E)
-        arquivo = ttk.Entry(frame, width=100, textvariable=self.arquivo, state="disabled")
+        arquivo = ttk.Entry(frame, width=100, textvariable=self.arquivo, state="disabled", font=("Arial", 10))
         arquivo.grid(row=0, column=1, padx=2, sticky=ttk.W)
         self.button_browse = ttk.Button(frame, text="Selecionar Arquivo", bootstyle=(INFO, OUTLINE),
-                                        command=self.on_browse)
+                                        command=self.on_browse, style='primary.TButton')
         self.button_browse.grid(row=0, column=2, padx=2)
 
-        label = ttk.Label(frame, text="Retranca / Título")
+        label = ttk.Label(frame, text="Retranca / Título", font=("Arial", 11))
         label.grid(row=1, column=0, padx=1, pady=(20, 0), sticky=ttk.E)
-        titulo = ttk.Entry(frame, width=50, textvariable=self.titulo)
-        titulo.grid(row=1, column=1, padx=2, pady=(20, 0), sticky=ttk.W)
+        self.entry_titulo = ttk.Entry(frame, width=50, textvariable=self.titulo, font=("Arial", 10))
+        self.entry_titulo.grid(row=1, column=1, padx=2, pady=(20, 0), sticky=ttk.W)
         self.titulo.trace('w', self.transform_uppercase)
 
-        label = ttk.Label(frame, text="Grupo")
+        label = ttk.Label(frame, text="Grupo", font=("Arial", 11))
         label.grid(row=2, column=0, padx=1, pady=(20, 0), sticky=ttk.E)
         self.combobox_grupo = ttk.Combobox(frame, width=20, justify="center", textvariable=self.grupo,
-                                           values=self.grupo_values)
+                                           font=("Arial", 10), values=self.grupo_values)
         self.combobox_grupo.grid(row=2, column=1, padx=2, pady=(20, 0), sticky=ttk.W)
 
-        self.button_action = ttk.Button(frame, width=100, text='Enviar ao servidor', command=lambda: self.on_action())
-        self.button_action.grid(row=3, column=1, padx=2, pady=(20, 0), sticky=ttk.W)
+        self.button_action = ttk.Button(frame, width=80, text='Enviar ao servidor', command=lambda: self.on_action(),
+                                        bootstyle='primary', style='primary.TButton')
+        self.button_action.grid(row=3, column=1, padx=0, pady=(20, 0))
 
     def create_progressbar_frame(self):
         frame = ttk.Frame(self)
@@ -217,6 +227,7 @@ class MainForm(ttk.Frame):
 
     def background_worker(self):
         result_destino2 = False
+        self.change_form_action_state(False)
 
         try:
             self.copiar_arquivo_e_gerar_xml(self.configuration["servidor"], self.titulo.get(), self.arquivo.get(),
@@ -252,6 +263,7 @@ class MainForm(ttk.Frame):
             messagebox.showerror(title="Erro", message=ex)
         finally:
             self.enviar = False
+            self.change_form_action_state(True)
 
     def copiar_arquivo_e_gerar_xml(self, destino, titulo, arquivo, server):
         self.update_label_progressbar(True, "0%")
@@ -390,7 +402,7 @@ class MainForm(ttk.Frame):
         except Exception as ex:
             raise Exception(ex)
 
-    def exibir_messagebox_concluido(self, result_destino1, result_destino2):
+    def exibir_messagebox_concluido(self, result_destino1, result_destino2) -> None:
         if self.configuration["habilitar_servidor2"] == 0 and result_destino1:
             LogService.save_info(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso "
                                  f"para {self.configuration['servidor']}")
@@ -425,14 +437,14 @@ class MainForm(ttk.Frame):
             messagebox.showwarning(title="Atenção",
                                    message=f"Falha ao transferir arquivo para os dois destinos selecionados.")
 
-    def excluir_arquivos_servidores(self):
+    def excluir_arquivos_servidores(self) -> None:
         self.excluir_arquivos(self.configuration["servidor"], self.titulo.get())
 
         if self.configuration["habilitar_servidor2"] == 1:
             self.excluir_arquivos(self.configuration["servidor2"], self.titulo.get())
 
     @staticmethod
-    def excluir_arquivos(caminho, nome_arquivo):
+    def excluir_arquivos(caminho, nome_arquivo) -> None:
         file = MyFile()
         file.excluir_arquivo_mxf(caminho, nome_arquivo)
         file.excluir_arquivo_xml(caminho, nome_arquivo)
@@ -466,10 +478,18 @@ class MainForm(ttk.Frame):
     def change_button_action_state(self, value: bool) -> None:
         if value:
             self.button_action['text'] = 'Enviar ao servidor'
-            self.button_action.configure(bootstyle="primary")
+            self.button_action.configure(bootstyle="primary", style="primary.TButton")
         else:
             self.button_action['text'] = 'Parar transferência'
-            self.button_action.configure(bootstyle="danger")
+            self.button_action.configure(bootstyle="danger", style="danger.TButton")
+
+    def change_form_action_state(self, value: bool) -> None:
+        if value:
+            self.entry_titulo['state'] = 'enabled'
+            self.combobox_grupo['state'] = 'enabled'
+        else:
+            self.entry_titulo['state'] = 'disabled'
+            self.combobox_grupo['state'] = 'disabled'
 
     def clean_fields(self) -> None:
         self.arquivo.set("")
