@@ -39,7 +39,8 @@ class MainForm(ttk.Frame):
             'servidor2': "",
             'habilitar_servidor2': 0,
             'timeout_ack': 15,
-            'usuario': ""
+            'usuario': "",
+            'grupos': []
         }
         self.photo_images = []
         self.enviar = False
@@ -56,12 +57,12 @@ class MainForm(ttk.Frame):
         self.label_porcent = None
 
         self.init_database()
-        self.associate_icons()
+        self.read_config()
         self.init_combobox()
+        self.associate_icons()
         self.create_buttonbar()
         self.create_enviar_frame()
         self.create_progressbar_frame()
-        self.read_config()
 
     @staticmethod
     def init_database():
@@ -84,15 +85,8 @@ class MainForm(ttk.Frame):
             self.photo_images.append(ttk.PhotoImage(name=key, file=_path))
 
     def init_combobox(self) -> None:
-        self.grupo_values.append("BDC CIDADE")
-        self.grupo_values.append("EPTV 1")
-        self.grupo_values.append("EPTV 2")
-        self.grupo_values.append("FUTSAL")
-        self.grupo_values.append("GELADEIRA")
-        self.grupo_values.append("PASSAGENS")
-        self.grupo_values.append("VINHETAS BDC")
-        self.grupo_values.append("VINHETAS EPTV 1")
-        self.grupo_values.append("VINHETAS EPTV 2")
+        for item in self.configuration["grupos"]:
+            self.grupo_values.append(item)
 
     def create_buttonbar(self) -> None:
         buttonbar = ttk.Frame(self, style='primary.TFrame')
@@ -176,7 +170,7 @@ class MainForm(ttk.Frame):
             setting_form.iconbitmap('src/app/assets/favicon.ico')
             setting_form.grab_set()
             setting_form.resizable(False, False)
-            SettingsForm(setting_form, self.configuration)
+            SettingsForm(setting_form, self)
         else:
             messagebox.showwarning(title="Atenção", message="Para abrir a janela de configurações é necessário antes "
                                                             "parar a monitoração clicando no botão Parar.")

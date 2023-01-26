@@ -12,7 +12,8 @@ class MyJSON:
                         self.configuration['servidor2'],
                         self.configuration['habilitar_servidor2'],
                         self.configuration['timeout_ack'],
-                        self.configuration['usuario'])
+                        self.configuration['usuario'],
+                        self.configuration['grupos'])
 
         try:
             with open(self.file, 'w') as f:
@@ -30,6 +31,7 @@ class MyJSON:
                 self.configuration['habilitar_servidor2'] = config.habilitar_servidor2
                 self.configuration['timeout_ack'] = config.timeout_ack
                 self.configuration['usuario'] = config.usuario
+                self.configuration['grupos'] = config.grupos
         except PermissionError:
             raise PermissionError("Sem permissão para abrir o arquivo de configuração.")
         except FileNotFoundError:

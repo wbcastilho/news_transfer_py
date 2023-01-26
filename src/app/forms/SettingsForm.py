@@ -2,15 +2,16 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from tkinter import filedialog
 from tkinter import messagebox
+from src.app.forms.AddGrupoForm import AddGrupoForm
 from src.business.adapters.MyJSON import MyJSON
 
 
 class SettingsForm(ttk.Frame):
-    def __init__(self, master, configuration):
+    def __init__(self, master, parent):
         super().__init__(master)
         self.pack(fill=BOTH, expand=YES, padx=10, pady=10)
         self.master = master
-        self.configuration = configuration
+        self.parent = parent
         self.local_configuration = {
             'servidor': ttk.StringVar(),
             'habilitar_servidor2': ttk.IntVar(),
@@ -21,11 +22,12 @@ class SettingsForm(ttk.Frame):
         self.button_save = None
         self.button_cancel = None
         self.button_browse2 = None
+        self.treeview = None
 
-        self.init_configuration()
         self.create_config_frame()
         self.create_buttons()
         self.select_checkbutton()
+        self.init_configuration()
 
     def create_config_frame(self) -> None:
         label_frame = ttk.Labelframe(self, text='Configuração Servidor 1')
@@ -90,12 +92,34 @@ class SettingsForm(ttk.Frame):
                                   )
         entry_usuario.grid(row=0, column=1, padx=2, sticky=ttk.W, pady=5)
 
+        label = ttk.Label(frame, text="Grupos")
+        label.grid(row=1, column=0, padx=1, sticky=ttk.E, pady=5)
+
+        self.treeview = ttk.Treeview(frame,
+                                     columns=('grupo',),
+                                     height=5,
+                                     selectmode='browse',
+                                     show="tree"
+                                     )
+
+        self.treeview.column('grupo', stretch=False)
+        self.treeview.grid(row=1, column=1, padx=2, sticky=ttk.W, pady=5)
+
+        frame_button = ttk.Frame(frame)
+        frame_button.grid(row=1, column=2, padx=2, sticky=ttk.W, pady=5)
+
+        button_adicionar = ttk.Button(frame_button, text="Adicionar", bootstyle="primary", command=self.add)
+        button_adicionar.grid(row=0, column=0, padx=2, sticky=ttk.W, pady=5)
+
+        button_remover = ttk.Button(frame_button, text="Remover", bootstyle="danger", command=self.remove)
+        button_remover.grid(row=1, column=0, padx=2, sticky=ttk.W, pady=5)
+
         label = ttk.Label(frame, text="Timeout ACK (minutos)")
-        label.grid(row=1, column=0, padx=1, pady=(20, 0), sticky=ttk.E)
+        label.grid(row=2, column=0, padx=1, pady=(20, 0), sticky=ttk.E)
 
         spinbox_timeout = ttk.Spinbox(frame, width=5, justify="center", from_=1, to=20,
                                       textvariable=self.local_configuration["timeout_ack"], wrap=False)
-        spinbox_timeout.grid(row=1, column=1, padx=2, pady=(20, 0), sticky=ttk.W)
+        spinbox_timeout.grid(row=2, column=1, padx=2, pady=(20, 0), sticky=ttk.W)
 
     def create_buttons(self) -> None:
         frame = ttk.Frame(self)
@@ -117,8 +141,14 @@ class SettingsForm(ttk.Frame):
         try:
             if self.validate():
                 self.change_configuration()
-                my_json = MyJSON('config.json', self.configuration)
+                my_json = MyJSON('config.json', self.parent.configuration)
                 my_json.write()
+
+                grupos = []
+                for item in self.parent.configuration["grupos"]:
+                    grupos.append(item)
+                    self.parent.combobox_grupo.configure(values=grupos)
+
                 self.master.destroy()
         except Exception as err:
             messagebox.showerror(title="Erro", message=err)
@@ -131,22 +161,45 @@ class SettingsForm(ttk.Frame):
             else:
                 self.local_configuration['servidor2'].set(path)
 
+    def add(self):
+        add_grupo_form = ttk.Toplevel()
+        add_grupo_form.title("Adicionar Grupo")
+        add_grupo_form.iconbitmap('src/app/assets/favicon.ico')
+        add_grupo_form.grab_set()
+        add_grupo_form.resizable(False, False)
+        AddGrupoForm(add_grupo_form, self)
+
+    def remove(self):
+        if len(self.treeview.get_children()) > 0:
+            selected_item = self.treeview.selection()[0]
+            self.treeview.delete(selected_item)
+
     def on_cancel(self) -> None:
         self.master.destroy()
 
     def init_configuration(self) -> None:
-        self.local_configuration["servidor"].set(self.configuration["servidor"])
-        self.local_configuration["servidor2"].set(self.configuration["servidor2"])
-        self.local_configuration["habilitar_servidor2"].set(self.configuration["habilitar_servidor2"])
-        self.local_configuration["timeout_ack"].set(self.configuration["timeout_ack"])
-        self.local_configuration["usuario"].set(self.configuration["usuario"])
+        self.local_configuration["servidor"].set(self.parent.configuration["servidor"])
+        self.local_configuration["servidor2"].set(self.parent.configuration["servidor2"])
+        self.local_configuration["habilitar_servidor2"].set(self.parent.configuration["habilitar_servidor2"])
+        self.local_configuration["timeout_ack"].set(self.parent.configuration["timeout_ack"])
+        self.local_configuration["usuario"].set(self.parent.configuration["usuario"])
+
+        i = 0
+        for item in self.parent.configuration["grupos"]:
+            self.treeview.insert('', i, text=item)
+            i = i + 1
 
     def change_configuration(self) -> None:
-        self.configuration["servidor"] = self.local_configuration["servidor"].get()
-        self.configuration["servidor2"] = self.local_configuration["servidor2"].get()
-        self.configuration["habilitar_servidor2"] = self.local_configuration["habilitar_servidor2"].get()
-        self.configuration["timeout_ack"] = self.local_configuration["timeout_ack"].get()
-        self.configuration["usuario"] = self.local_configuration["usuario"].get()
+        self.parent.configuration["servidor"] = self.local_configuration["servidor"].get()
+        self.parent.configuration["servidor2"] = self.local_configuration["servidor2"].get()
+        self.parent.configuration["habilitar_servidor2"] = self.local_configuration["habilitar_servidor2"].get()
+        self.parent.configuration["timeout_ack"] = self.local_configuration["timeout_ack"].get()
+        self.parent.configuration["usuario"] = self.local_configuration["usuario"].get()
+
+        self.parent.configuration["grupos"].clear()
+
+        for item in self.treeview.get_children():
+            self.parent.configuration["grupos"].append(self.treeview.item(item)["text"])
 
     def validate(self) -> bool:
         if self.local_configuration["servidor"].get() == "":
