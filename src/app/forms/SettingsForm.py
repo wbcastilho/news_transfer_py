@@ -93,7 +93,7 @@ class SettingsForm(ttk.Frame):
         entry_usuario.grid(row=0, column=1, padx=2, sticky=ttk.W, pady=5)
 
         label = ttk.Label(frame, text="Grupos")
-        label.grid(row=1, column=0, padx=1, sticky=ttk.E, pady=5)
+        label.grid(row=1, column=0, padx=1, sticky=ttk.NE, pady=5)
 
         self.treeview = ttk.Treeview(frame,
                                      columns=('grupo',),
@@ -115,11 +115,11 @@ class SettingsForm(ttk.Frame):
         button_remover.grid(row=1, column=0, padx=2, sticky=ttk.W, pady=5)
 
         label = ttk.Label(frame, text="Timeout ACK (minutos)")
-        label.grid(row=2, column=0, padx=1, pady=(20, 0), sticky=ttk.E)
+        label.grid(row=2, column=0, padx=1, pady=5, sticky=ttk.E)
 
         spinbox_timeout = ttk.Spinbox(frame, width=5, justify="center", from_=1, to=20,
                                       textvariable=self.local_configuration["timeout_ack"], wrap=False)
-        spinbox_timeout.grid(row=2, column=1, padx=2, pady=(20, 0), sticky=ttk.W)
+        spinbox_timeout.grid(row=2, column=1, padx=2, pady=5, sticky=ttk.W)
 
     def create_buttons(self) -> None:
         frame = ttk.Frame(self)

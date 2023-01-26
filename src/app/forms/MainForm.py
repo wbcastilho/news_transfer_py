@@ -128,6 +128,7 @@ class MainForm(ttk.Frame):
         label.grid(row=1, column=0, padx=1, pady=(20, 0), sticky=ttk.E)
         titulo = ttk.Entry(frame, width=50, textvariable=self.titulo)
         titulo.grid(row=1, column=1, padx=2, pady=(20, 0), sticky=ttk.W)
+        self.titulo.trace('w', self.transform_uppercase)
 
         label = ttk.Label(frame, text="Grupo")
         label.grid(row=2, column=0, padx=1, pady=(20, 0), sticky=ttk.E)
@@ -152,8 +153,15 @@ class MainForm(ttk.Frame):
         self.label_porcent = ttk.Label(frame, text="0%")
         self.label_porcent.pack_forget()
 
+    def transform_uppercase(self, *args):
+        self.titulo.set(self.titulo.get().upper())
+
     def read_config(self) -> None:
         try:
+            if not os.path.exists('config.json'):
+                raise Exception("Não foi encontrado arquivo de configurações, preencha os campos na janela de "
+                                "Configurações e clique em Salvar.")
+
             my_json = MyJSON('config.json', self.configuration)
             my_json.read()
         except PermissionError as err:
