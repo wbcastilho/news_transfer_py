@@ -336,8 +336,8 @@ class MainForm(ttk.Frame):
                 'codigo': MyRandom.gerar_codigo(),
                 'arquivo': f"{titulo}.mxf",
                 'titulo': titulo,
-                'grupo': self.configuration["usuario"],
-                'operador': 'Operador',
+                'grupo': self.grupo.get(),
+                'operador': self.configuration["usuario"],
                 'markIn': '000',
                 'markOut': ConvertVideo.get_duration(arquivo),
                 'remover': '0'
