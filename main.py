@@ -8,7 +8,7 @@ if __name__ == '__main__':
         resizable=(False, False)
     )
 
-    # Define alterações em alguns estilos
+    # Define alterações nos estilos dos botões
     app.style.configure('danger.TButton', font=('Helvetica', 10))
     app.style.configure('primary.TButton', font=('Helvetica', 10))
     app.style.configure('secondary.TButton', font=('Helvetica', 10))

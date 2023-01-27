@@ -154,8 +154,7 @@ class MainForm(ttk.Frame):
     def read_config(self) -> None:
         try:
             if not os.path.exists('config.json'):
-                raise Exception("Não foi encontrado arquivo de configurações, preencha os campos na janela de "
-                                "Configurações e clique em Salvar.")
+                return
 
             my_json = MyJSON('config.json', self.configuration)
             my_json.read()
@@ -392,7 +391,7 @@ class MainForm(ttk.Frame):
             LogService.save_info(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso "
                                  f"para {self.configuration['servidor']}")
             messagebox.showinfo(title="Atenção", message=f"Arquivo {self.titulo.get()}.mxf "
-                                                         f"transferido com sucesso!")
+                                                         f"transferido com sucesso para o Servidor 1!")
         elif self.configuration["habilitar_servidor2"] == 0 and not result_destino1:
             LogService.save_info("Falha ao transferir arquivo.")
             messagebox.showinfo(title="Atenção", message="Falha ao transferir arquivo.")
@@ -400,27 +399,27 @@ class MainForm(ttk.Frame):
             LogService.save_info(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
                                  f"{self.configuration['servidor']} e para {self.configuration['servidor2']}")
             messagebox.showinfo(title="Atenção", message=f"Arquivo {self.titulo.get()}.mxf "
-                                                         f"transferido com sucesso para os dois destinos.")
+                                                         f"transferido com sucesso para os dois Servidores.")
         elif result_destino1:
             LogService.save_info(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
                                  f"{self.configuration['servidor']} mas apresentou falha o ser transferido para "
                                  f"{self.configuration['servidor2']}")
             messagebox.showwarning(title="Atenção",
                                    message=f"Arquivo {self.titulo.get()}.mxf "
-                                           f"transferido com sucesso para o destino 1 mas "
-                                           f"apresentou falha ao ser transferido ao destino 2.")
+                                           f"transferido com sucesso para o Servidor 1 mas "
+                                           f"apresentou falha ao ser transferido ao Servidor 2.")
         elif result_destino2:
             LogService.save_info(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
                                  f"{self.configuration['servidor2']} mas apresentou falha o ser transferido para "
                                  f"{self.configuration['servidor']}")
             messagebox.showwarning(title="Atenção",
                                    message=f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para o "
-                                           f"destino 2 mas apresentou falha ao ser transferido ao destino 1.")
+                                           f"Servidor 2 mas apresentou falha ao ser transferido ao Servidor 1.")
         else:
             LogService.save_info(f"Falha ao transferir arquivo {self.titulo.get()}.mxf para "
                                  f"{self.configuration['servidor']} e para {self.configuration['servidor2']}.")
             messagebox.showwarning(title="Atenção",
-                                   message=f"Falha ao transferir arquivo para os dois destinos selecionados.")
+                                   message=f"Falha ao transferir arquivo para os dois Servidores selecionados.")
 
     def excluir_arquivos_servidores(self) -> None:
         self.excluir_arquivos(self.configuration["servidor"], self.titulo.get())

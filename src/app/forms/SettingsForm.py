@@ -26,8 +26,8 @@ class SettingsForm(ttk.Frame):
 
         self.create_config_frame()
         self.create_buttons()
-        self.select_checkbutton()
         self.init_configuration()
+        self.select_checkbutton()
 
     def create_config_frame(self) -> None:
         label_frame = ttk.Labelframe(self, text='Configuração Servidor 1')
