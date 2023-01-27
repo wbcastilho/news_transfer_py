@@ -15,14 +15,8 @@ class LogsForm(ttk.Frame):
         self.xscroll = None
         self.datevar = ttk.StringVar()
 
-        self.init_style()
         self.create_table()
         self.select_date()
-
-    @staticmethod
-    def init_style():
-        my_style = ttk.Style()
-        my_style.configure('primary.TButton', font=('Helvetica', 10))
 
     def create_table(self):
         frame = ttk.Frame(self)

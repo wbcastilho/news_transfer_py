@@ -7,6 +7,15 @@ if __name__ == '__main__':
         title="News Transfer - 1.0",
         resizable=(False, False)
     )
+
+    # Define alterações em alguns estilos
+    app.style.configure('danger.TButton', font=('Helvetica', 10))
+    app.style.configure('primary.TButton', font=('Helvetica', 10))
+    app.style.configure('secondary.TButton', font=('Helvetica', 10))
+    app.style.configure('success.TButton', font=('Helvetica', 10))
+    app.style.configure('info.Outline.TButton', font=('Helvetica', 10))
+    app.style.configure('primary.Outline.TButton', font=('Helvetica', 10))
+
     app.iconbitmap('src/app/assets/favicon.ico')
     MainForm(app)
 

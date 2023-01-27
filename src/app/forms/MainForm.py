@@ -50,7 +50,6 @@ class MainForm(ttk.Frame):
         self.progressbar = None
         self.label_porcent = None
 
-        self.init_style()
         self.init_database()
         self.read_config()
         self.init_combobox()
@@ -78,13 +77,6 @@ class MainForm(ttk.Frame):
         for key, val in image_files.items():
             _path = img_path / val
             self.photo_images.append(ttk.PhotoImage(name=key, file=_path))
-
-    @staticmethod
-    def init_style():
-        my_style = ttk.Style()
-        my_style.configure('primary.TButton', font=('Helvetica', 10))
-        my_style.configure('primary.Outline.TButton', font=('Helvetica', 10))
-        my_style.configure('danger.TButton', font=('Helvetica', 10))
 
     def init_combobox(self) -> None:
         for item in self.configuration["grupos"]:

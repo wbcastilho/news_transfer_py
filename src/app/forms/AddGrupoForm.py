@@ -19,15 +19,8 @@ class AddGrupoForm(ttk.Frame):
         self.button_browse2 = None
         self.treeview = None
 
-        self.init_style()
         self.create_config_frame()
         self.create_buttons()
-
-    @staticmethod
-    def init_style():
-        my_style = ttk.Style()
-        my_style.configure('danger.TButton', font=('Helvetica', 10))
-        my_style.configure('success.TButton', font=('Helvetica', 10))
 
     def create_config_frame(self) -> None:
         label_frame = ttk.Labelframe(self, text='Grupo')
