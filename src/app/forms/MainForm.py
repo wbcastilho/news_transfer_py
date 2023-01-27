@@ -7,7 +7,6 @@ from ttkbootstrap.constants import *
 from pathlib import Path
 import threading
 import os
-import tkinter.font as font
 
 from src.app.forms.LogForm import LogsForm
 from src.app.forms.SettingsForm import SettingsForm
@@ -20,15 +19,8 @@ from src.business.utils.StopWatch import StopWatch
 from src.business.adapters.MyFile import MyFile
 from src.business.services.LogService import LogService
 from src.data.repository.LogRepository import LogRepository
-
-
-class SameFileError(OSError):
-    """Raised when source and destination are the same file."""
-
-
-class SpecialFileError(OSError):
-    """Raised when trying to do a kind of operation (e.g. copying) which is
-    not supported on a special file (e.g. a named pipe)"""
+from src.business.exceptions.SameFileError import SameFileError
+from src.business.exceptions.SpecialFileError import SpecialFileError
 
 
 class MainForm(ttk.Frame):
