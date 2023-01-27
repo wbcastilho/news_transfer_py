@@ -471,9 +471,11 @@ class MainForm(ttk.Frame):
         if value:
             self.entry_titulo['state'] = 'enabled'
             self.combobox_grupo['state'] = 'enabled'
+            self.button_browse["state"] = "enabled"
         else:
             self.entry_titulo['state'] = 'disabled'
             self.combobox_grupo['state'] = 'disabled'
+            self.button_browse["state"] = "disabled"
 
     def clean_fields(self) -> None:
         self.arquivo.set("")
