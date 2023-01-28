@@ -17,20 +17,18 @@ python -m venv venv
 Como estou usando o PyCharm eu apenas apontei o interpretador para o python da venv criada e não precisei ativar 
 via comando.
 
-##Pré-requisitos
-
+## :clipboard: Pré-requisitos
 ### Pacotes importados 
 * ttkbootstrap - Bootstrap para tkinter
 * Pillow - Manipulação de imagens, aqui utiizado para os ícones
 * peewee - ORM
 * pyinstaller - Gera o executável
 
-## Executando os testes
-
+## :hammer: Executando os testes
 ### Executando todos os testes do Unittest
 python -m unittest -v
 
-## Gerando o executável
+## :wrench: Gerando o executável
 
 ### Gerando o executável com pyinstaller
 pyinstaller --noconsole --name="NewsTransferPy" --add-data="src\app\assets;.\src\app\assets" --icon=src\app\assets\favicon.ico --collect-all "ttkbootstrap" --collect-all "peewee" main.py
@@ -46,7 +44,7 @@ pyinstaller --noconsole --name="NewsTransferPy" --add-data="src\app\assets;.\src
 
 --collect-all: copia tudo sobre o módulo especificado
 
-## Observações
+## :pushpin: Observações
 ### Observação quanto ao desenvolvimento
 Copiar o arquivo ffmpeg.exe para a pasta raiz do programa. Por causa do tamanho do arquivo não possível subir para o 
 github.
