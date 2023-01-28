@@ -190,7 +190,6 @@ class MainForm(ttk.Frame):
     def on_browse(self) -> None:
         filetypes = (
             ('MXF Files', '*.mxf'),
-            ('All files', '*.*')
         )
         filename = filedialog.askopenfilename(title='Selecionar Arquivo', initialdir='c:/', filetypes=filetypes)
         if filename:
