@@ -8,10 +8,14 @@ Software utilizado para transferência de arquivos para um servidor de vídeo.
 Ao fazer o clone do projeto será necessário criar e habilitar a virtual env
 
 ### Criar venv
+```
 python -m venv venv
+```
 
 ### Habilitar venv via prompt (caso não utilize o editor PyCharm)
+```
 . .\venv\Script\acrivate
+```
 
 ### Habilitar venv no editor PyCharm
 Como estou usando o PyCharm eu apenas apontei o interpretador para o python da venv criada e não precisei ativar 
@@ -26,12 +30,16 @@ via comando.
 
 ## :hammer: Executando os testes
 ### Executando todos os testes do Unittest
+```
 python -m unittest -v
+```
 
 ## :wrench: Gerando o executável
 
 ### Gerando o executável com pyinstaller
+```
 pyinstaller --noconsole --name="NewsTransferPy" --add-data="src\app\assets;.\src\app\assets" --icon=src\app\assets\favicon.ico --collect-all "ttkbootstrap" --collect-all "peewee" main.py
+```
 
 #### Parâmetros
 --noconsole: não exibe a janela de console
