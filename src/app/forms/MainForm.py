@@ -450,6 +450,7 @@ class MainForm(ttk.Frame):
 
     def set_progressbar_determinate(self, value: bool) -> None:
         if value:
+            self.progressbar.stop()
             self.progressbar["mode"] = "determinate"
         else:
             self.progressbar["mode"] = "indeterminate"
