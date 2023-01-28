@@ -1,4 +1,7 @@
 # News Transfer Py
+![Python](https://img.shields.io/badge/python-v3.8%2B-blue)
+![GitHub last commit](https://img.shields.io/github/last-commit/AzeemIdrisi/PhoneSploit-Pro?logo=github)
+
 Software utilizado para transferência de arquivos para um servidor de vídeo. 
 
 ### Criar e habilitar venv
@@ -14,7 +17,7 @@ via comando.
 #### Habilitar venv via prompt caso não utilize o editor PyCharm
 . .\venv\Script\acrivate
 
-### Pacotes importados
+### Pacotes importados 
 * ttkbootstrap - Bootstrap para tkinter
 * Pillow - Manipulação de imagens, aqui utiizado para os ícones
 * peewee - ORM
