@@ -17,6 +17,7 @@ class AddGrupoForm(ttk.Frame):
         self.button_save = None
         self.button_cancel = None
         self.button_browse2 = None
+        self.entry_nome = None
         self.treeview = None
 
         self.create_config_frame()
@@ -32,12 +33,13 @@ class AddGrupoForm(ttk.Frame):
         label = ttk.Label(frame, text="Nome", font=('Helvetica', 10))
         label.grid(row=0, column=0, padx=1, sticky=ttk.E, pady=5)
 
-        entry_servidor = ttk.Entry(frame,
-                                   textvariable=self.nome_grupo,
-                                   width=60,
-                                   font=('Helvetica', 10)
-                                   )
-        entry_servidor.grid(row=0, column=1, padx=2, sticky=ttk.W, pady=5)
+        self.entry_nome = ttk.Entry(frame,
+                                    textvariable=self.nome_grupo,
+                                    width=60,
+                                    font=('Helvetica', 10)
+                                    )
+        self.entry_nome.grid(row=0, column=1, padx=2, sticky=ttk.W, pady=5)
+        self.entry_nome.bind('<Key>', lambda event: self.entry_nome.configure(bootstyle="default"))
 
     def create_buttons(self) -> None:
         frame = ttk.Frame(self)
@@ -53,11 +55,14 @@ class AddGrupoForm(ttk.Frame):
 
     def on_save(self) -> None:
         if self.nome_grupo.get() == "":
+            self.entry_nome.configure(bootstyle="danger")
+            self.entry_nome.focus()
             messagebox.showwarning(title="Atenção", message="O campo Nome deve ser preenchido.")
             return
 
         tamanho = len(self.parent.treeview.get_children())
         self.parent.treeview.insert('', tamanho + 1, text=self.nome_grupo.get())
+        self.parent.treeview.configure(bootstyle="default")
         self.master.destroy()
 
     def on_cancel(self) -> None:

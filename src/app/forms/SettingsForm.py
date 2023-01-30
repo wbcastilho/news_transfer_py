@@ -22,6 +22,10 @@ class SettingsForm(ttk.Frame):
         self.button_save = None
         self.button_cancel = None
         self.button_browse2 = None
+        self.entry_servidor1 = None
+        self.entry_servidor2 = None
+        self.entry_usuario = None
+        self.spinbox_timeout = None
         self.treeview = None
 
         self.create_config_frame()
@@ -39,13 +43,13 @@ class SettingsForm(ttk.Frame):
         label = ttk.Label(frame, text="Caminho", font=('Helvetica', 10))
         label.grid(row=0, column=0, padx=1, sticky=ttk.E, pady=5)
 
-        entry_servidor = ttk.Entry(frame,
-                                   textvariable=self.local_configuration['servidor'],
-                                   width=100,
-                                   state="disabled",
-                                   font=('Helvetica', 10)
-                                   )
-        entry_servidor.grid(row=0, column=1, padx=2, sticky=ttk.W, pady=5)
+        self.entry_servidor1 = ttk.Entry(frame,
+                                         textvariable=self.local_configuration['servidor'],
+                                         width=100,
+                                         state="disabled",
+                                         font=('Helvetica', 10)
+                                         )
+        self.entry_servidor1.grid(row=0, column=1, padx=2, sticky=ttk.W, pady=5)
 
         button_browse = ttk.Button(frame, text="Selecionar Pasta", bootstyle=(INFO, OUTLINE),
                                    style='info.Outline.TButton', command=lambda: self.on_browse(1))
@@ -67,13 +71,13 @@ class SettingsForm(ttk.Frame):
         label = ttk.Label(frame, text="Caminho", font=('Helvetica', 10))
         label.grid(row=1, column=0, padx=1, sticky=ttk.E, pady=5)
 
-        entry_servidor = ttk.Entry(frame,
-                                   textvariable=self.local_configuration['servidor2'],
-                                   width=100,
-                                   state="disabled",
-                                   font=('Helvetica', 10)
-                                   )
-        entry_servidor.grid(row=1, column=1, padx=2, sticky=ttk.W, pady=5)
+        self.entry_servidor2 = ttk.Entry(frame,
+                                         textvariable=self.local_configuration['servidor2'],
+                                         width=100,
+                                         state="disabled",
+                                         font=('Helvetica', 10)
+                                         )
+        self.entry_servidor2.grid(row=1, column=1, padx=2, sticky=ttk.W, pady=5)
 
         self.button_browse2 = ttk.Button(frame, text="Selecionar Pasta", bootstyle=(INFO, OUTLINE),
                                          state="disabled", style='info.Outline.TButton',
@@ -89,12 +93,13 @@ class SettingsForm(ttk.Frame):
         label = ttk.Label(frame, text="Usuário", font=('Helvetica', 10))
         label.grid(row=0, column=0, padx=1, sticky=ttk.E, pady=5)
 
-        entry_usuario = ttk.Entry(frame,
-                                  textvariable=self.local_configuration['usuario'],
-                                  width=50,
-                                  font=('Helvetica', 10)
-                                  )
-        entry_usuario.grid(row=0, column=1, padx=2, sticky=ttk.W, pady=5)
+        self.entry_usuario = ttk.Entry(frame,
+                                       textvariable=self.local_configuration['usuario'],
+                                       width=50,
+                                       font=('Helvetica', 10)
+                                       )
+        self.entry_usuario.grid(row=0, column=1, padx=2, sticky=ttk.W, pady=5)
+        self.entry_usuario.bind('<Key>', lambda event: self.entry_usuario.configure(bootstyle="default"))
 
         label = ttk.Label(frame, text="Grupos", font=('Helvetica', 10))
         label.grid(row=1, column=0, padx=1, sticky=ttk.NE, pady=5)
@@ -123,10 +128,12 @@ class SettingsForm(ttk.Frame):
         label = ttk.Label(frame, text="Timeout ACK (minutos)", font=('Helvetica', 10))
         label.grid(row=2, column=0, padx=1, pady=5, sticky=ttk.E)
 
-        spinbox_timeout = ttk.Spinbox(frame, width=5, justify="center", from_=1, to=20,
-                                      textvariable=self.local_configuration["timeout_ack"], wrap=False,
-                                      font=('Helvetica', 10))
-        spinbox_timeout.grid(row=2, column=1, padx=2, pady=5, sticky=ttk.W)
+        self.spinbox_timeout = ttk.Spinbox(frame, width=5, justify="center", from_=1, to=20,
+                                           textvariable=self.local_configuration["timeout_ack"], wrap=False,
+                                           font=('Helvetica', 10))
+        self.spinbox_timeout.grid(row=2, column=1, padx=2, pady=5, sticky=ttk.W)
+        self.spinbox_timeout.bind('<Key>', lambda event: self.spinbox_timeout.configure(bootstyle="default"))
+        self.spinbox_timeout.bind('<FocusIn>', lambda event: self.spinbox_timeout.configure(bootstyle="default"))
 
     def create_buttons(self) -> None:
         frame = ttk.Frame(self)
@@ -166,8 +173,10 @@ class SettingsForm(ttk.Frame):
         path = filedialog.askdirectory(initialdir=r'c:\\', title="Selecionar Pasta")
         if path:
             if servidor == 1:
+                self.entry_servidor1.configure(bootstyle="default")
                 self.local_configuration['servidor'].set(path)
             else:
+                self.entry_servidor2.configure(bootstyle="default")
                 self.local_configuration['servidor2'].set(path)
 
     def add(self):
@@ -212,17 +221,36 @@ class SettingsForm(ttk.Frame):
 
     def validate(self) -> bool:
         if self.local_configuration["servidor"].get() == "":
-            messagebox.showwarning(title="Atenção", message="O campo Caminho Destino 1 deve ser preenchido.")
+            self.entry_servidor1.configure(bootstyle="danger")
+            self.entry_servidor1.focus()
+            messagebox.showwarning(title="Atenção", message="O campo Caminho Servidor 1 deve ser preenchido.")
             return False
-        if self.local_configuration["servidor2"].get() == "":
-            messagebox.showwarning(title="Atenção", message="O campo Caminho Destino 2 deve ser preenchido.")
+        if self.local_configuration['habilitar_servidor2'].get() and \
+                self.local_configuration["servidor2"].get() == "":
+            self.entry_servidor2.configure(bootstyle="danger")
+            self.entry_servidor2.focus()
+            messagebox.showwarning(title="Atenção", message="O campo Caminho Servidor 2 deve ser preenchido.")
             return False
-        if self.local_configuration["servidor"].get() == self.local_configuration["servidor2"].get():
-            messagebox.showwarning(title="Atenção", message="O campo Caminho Destino 1 deve ser diferente do campo "
-                                                            "Caminho Destino 2 deve ser preenchido.")
+        if self.local_configuration['habilitar_servidor2'] and \
+                self.local_configuration["servidor"].get() == self.local_configuration["servidor2"].get():
+            self.entry_servidor2.configure(bootstyle="danger")
+            self.entry_servidor2.focus()
+            messagebox.showwarning(title="Atenção", message="O campo Caminho Servidor 1 deve ser diferente do campo "
+                                                            "Caminho Servidor 2 deve ser preenchido.")
             return False
         if self.local_configuration["usuario"].get() == "":
+            self.entry_usuario.configure(bootstyle="danger")
+            self.entry_usuario.focus()
             messagebox.showwarning(title="Atenção", message="O campo Usuário deve ser preenchido.")
+            return False
+        if len(self.treeview.get_children()) == 0:
+            self.treeview.configure(bootstyle="danger")
+            self.treeview.focus()
+            messagebox.showwarning(title="Atenção", message="O campo Grupos deve ter pelo menos um item adicionado.")
+            return False
+        if self.local_configuration["timeout_ack"].get() <= 0 or self.local_configuration["timeout_ack"].get() > 20:
+            self.spinbox_timeout.configure(bootstyle="danger")
+            messagebox.showwarning(title="Atenção", message="O campo Timeout ACK deve ser preenchido.")
             return False
         return True
 

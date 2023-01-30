@@ -45,6 +45,7 @@ class MainForm(ttk.Frame):
         self.grupo_values = []
         self.button_action = None
         self.button_browse = None
+        self.entry_arquivo = None
         self.entry_titulo = None
         self.combobox_grupo = None
         self.progressbar = None
@@ -112,8 +113,8 @@ class MainForm(ttk.Frame):
 
         label = ttk.Label(frame, text="Arquivo", font=("Helvetica", 10))
         label.grid(row=0, column=0, padx=1, sticky=ttk.E)
-        arquivo = ttk.Entry(frame, width=100, textvariable=self.arquivo, state="disabled", font=("Helvetica", 10))
-        arquivo.grid(row=0, column=1, padx=2, sticky=ttk.W)
+        self.entry_arquivo = ttk.Entry(frame, width=100, textvariable=self.arquivo, state="disabled", font=("Helvetica", 10))
+        self.entry_arquivo.grid(row=0, column=1, padx=2, sticky=ttk.W)
         self.button_browse = ttk.Button(frame, text="Selecionar Arquivo", bootstyle=(INFO, OUTLINE),
                                         command=self.on_browse, style='primary.Outline.TButton')
         self.button_browse.grid(row=0, column=2, padx=2)
@@ -129,6 +130,8 @@ class MainForm(ttk.Frame):
         self.combobox_grupo = ttk.Combobox(frame, width=20, justify="center", textvariable=self.grupo,
                                            font=("Helvetica", 10), values=self.grupo_values)
         self.combobox_grupo.grid(row=2, column=1, padx=2, pady=(20, 0), sticky=ttk.W)
+        self.combobox_grupo.bind("<<ComboboxSelected>>",
+                                 lambda event:  self.combobox_grupo.configure(bootstyle="default"))
 
         self.button_action = ttk.Button(frame, width=120, text='Enviar ao servidor', command=lambda: self.on_action(),
                                         bootstyle='primary', style='primary.TButton')
@@ -149,6 +152,7 @@ class MainForm(ttk.Frame):
         self.label_porcent.pack_forget()
 
     def transform_uppercase(self, *args):
+        self.entry_titulo.configure(bootstyle="default")
         self.titulo.set(self.titulo.get().upper())
 
     def read_config(self) -> None:
@@ -194,6 +198,7 @@ class MainForm(ttk.Frame):
         filename = filedialog.askopenfilename(title='Selecionar Arquivo', initialdir='c:/', filetypes=filetypes)
         if filename:
             self.arquivo.set(filename)
+            self.entry_arquivo.configure(bootstyle="default")
 
     def on_action(self) -> None:
         if not self.enviar:
@@ -491,6 +496,7 @@ class MainForm(ttk.Frame):
             messagebox.showwarning(title="Atenção", message="Em configurações o campo Usuário devem ser preenchido.")
             return False
         if self.arquivo.get() is None or self.arquivo.get() == "":
+            self.entry_arquivo.configure(bootstyle="danger")
             messagebox.showwarning(title="Atenção", message="O campo arquivo deve ser selecionado.")
             return False
         if MyFile.extensao_arquivo(self.arquivo.get()) != ".MXF" \
@@ -499,9 +505,13 @@ class MainForm(ttk.Frame):
                                                             ".mxf.")
             return False
         if self.titulo.get() is None or self.titulo.get() == "":
+            self.entry_titulo.configure(bootstyle="danger")
+            self.entry_titulo.focus()
             messagebox.showwarning(title="Atenção", message="O campo título deve ser preenchido.")
             return False
         if self.grupo.get() is None or self.grupo.get() == "":
+            self.combobox_grupo.configure(bootstyle="danger")
+            self.combobox_grupo.focus()
             messagebox.showwarning(title="Atenção", message="O campo Grupo dever ser selecionado.")
             return False
         return True
