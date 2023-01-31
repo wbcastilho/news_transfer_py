@@ -88,12 +88,14 @@ class LogsForm(ttk.Frame):
             if i % 2 == 0:
                 self.treeview.insert('',
                                      END, log.id,
-                                     values=(log.datetime, log.type_log.capitalize(), log.message),
+                                     values=(log.datetime.strftime('%d/%m/%Y %H:%M:%S'), log.type_log.capitalize(),
+                                             log.message),
                                      tags=(log.type_log,))
             else:
                 self.treeview.insert('',
                                      END, log.id,
-                                     values=(log.datetime, log.type_log.capitalize(), log.message),
+                                     values=(log.datetime.strftime('%d/%m/%Y %H:%M:%S'), log.type_log.capitalize(),
+                                             log.message),
                                      tags=("odd", log.type_log,))
             i = i + 1
 

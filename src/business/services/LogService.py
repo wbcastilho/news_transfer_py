@@ -6,7 +6,7 @@ class LogService:
     @staticmethod
     def save(type_log: str, message: str):
         try:
-            datetime_now = datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+            datetime_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             LogRepository.insert(data=datetime_now, type_log=type_log, message=message)
         except Exception:
             pass

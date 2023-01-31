@@ -19,8 +19,8 @@ class LogRepository:
     def find(str_date):
         data_selecionada = datetime.strptime(str_date, '%d/%m/%Y').date()
         um_dia = timedelta(1)
-        str_data_selecionada = data_selecionada.strftime('%d/%m/%Y')
-        str_proxima_data = (data_selecionada + um_dia).strftime('%d/%m/%Y')
+        str_data_selecionada = data_selecionada.strftime('%Y-%m-%d')
+        str_proxima_data = (data_selecionada + um_dia).strftime('%Y-%m-%d')
 
         return Log.select().where((Log.datetime >= str_data_selecionada) & (Log.datetime < str_proxima_data))\
             .order_by(Log.id.desc())
