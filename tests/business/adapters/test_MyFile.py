@@ -13,8 +13,7 @@ class TestMyFile(unittest.TestCase):
         pass
 
     def test_excluir_arquivo_xml(self):
-        file = MyFile()
-        file.excluir_arquivo_xml('tests\\files\\', 'file')
+        MyFile.excluir_arquivo_xml('tests\\files\\', 'file')
 
         if not os.path.exists('tests\\files\\file.xml'):
             self.assertTrue(True)

@@ -433,10 +433,9 @@ class MainForm(ttk.Frame):
 
     @staticmethod
     def excluir_arquivos(caminho, nome_arquivo) -> None:
-        file = MyFile()
-        file.excluir_arquivo_mxf(caminho, nome_arquivo)
-        file.excluir_arquivo_xml(caminho, nome_arquivo)
-        file.excluir_arquivo_ack(caminho, nome_arquivo)
+        MyFile.excluir_arquivo_mxf(caminho, nome_arquivo)
+        MyFile.excluir_arquivo_xml(caminho, nome_arquivo)
+        MyFile.excluir_arquivo_ack(caminho, nome_arquivo)
 
     def update_progress(self, copied: float, total: float, server: str) -> None:
         porcent = int((copied * 100) / total)
