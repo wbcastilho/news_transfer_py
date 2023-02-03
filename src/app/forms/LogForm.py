@@ -79,25 +79,32 @@ class LogsForm(ttk.Frame):
 
         for log in logs:
             tamanho = len(log.message)
-            if tamanho > maior:
-                maior = tamanho
-                if tamanho > 90:
-                    x = (600 * tamanho // 100)
-                    self.treeview.column('log', stretch=False, width=x)
+            maior = self.message_column_size(maior, tamanho)
 
             if i % 2 == 0:
-                self.treeview.insert('',
-                                     END, log.id,
-                                     values=(log.datetime.strftime('%d/%m/%Y %H:%M:%S'), log.type_log.capitalize(),
-                                             log.message),
-                                     tags=(log.type_log,))
+                self.insert_row(log, True)
             else:
-                self.treeview.insert('',
-                                     END, log.id,
-                                     values=(log.datetime.strftime('%d/%m/%Y %H:%M:%S'), log.type_log.capitalize(),
-                                             log.message),
-                                     tags=("odd", log.type_log,))
+                self.insert_row(log, False)
             i = i + 1
+
+    def message_column_size(self, maior: int, tamanho: int):
+        if tamanho > maior:
+            maior = tamanho
+            if tamanho > 90:
+                x = (600 * tamanho // 100)
+                self.treeview.column('log', stretch=False, width=x)
+        return maior
+
+    def insert_row(self, log, value):
+        if value:
+            tags = (log.type_log,)
+        else:
+            tags = ("odd", log.type_log,)
+
+        self.treeview.insert('', END, log.id,
+                             values=(log.datetime.strftime('%d/%m/%Y %H:%M:%S'), log.type_log.capitalize(),
+                                     log.message),
+                             tags=tags)
 
     def clear_treeview(self):
         for item in self.treeview.get_children():
