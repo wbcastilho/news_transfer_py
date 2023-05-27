@@ -113,7 +113,8 @@ class MainForm(ttk.Frame):
 
         label = ttk.Label(frame, text="Arquivo", font=("Helvetica", 10))
         label.grid(row=0, column=0, padx=1, sticky=ttk.E)
-        self.entry_arquivo = ttk.Entry(frame, width=100, textvariable=self.arquivo, state="disabled", font=("Helvetica", 10))
+        self.entry_arquivo = ttk.Entry(frame, width=70, textvariable=self.arquivo, state="disabled",
+                                       font=("Helvetica", 10))
         self.entry_arquivo.grid(row=0, column=1, padx=2, sticky=ttk.W)
         self.button_browse = ttk.Button(frame, text="Selecionar Arquivo", bootstyle=(INFO, OUTLINE),
                                         command=self.on_browse, style='primary.Outline.TButton')
@@ -133,7 +134,7 @@ class MainForm(ttk.Frame):
         self.combobox_grupo.bind("<<ComboboxSelected>>",
                                  lambda event:  self.combobox_grupo.configure(bootstyle="default"))
 
-        self.button_action = ttk.Button(frame, width=120, text='Enviar ao servidor', command=lambda: self.on_action(),
+        self.button_action = ttk.Button(frame, width=100, text='Enviar ao servidor', command=lambda: self.on_action(),
                                         bootstyle='primary', style='primary.TButton')
         self.button_action.grid(row=3, column=0, columnspan=3, padx=0, pady=(20, 0))
 
