@@ -55,6 +55,7 @@ class MainForm(ttk.Frame):
         self.combobox_grupo = None
         self.progressbar = None
         self.label_porcent = None
+        self.progress_slider = None
         self.video = None
 
         self.init_database()
@@ -174,9 +175,9 @@ class MainForm(ttk.Frame):
         )
         btn.pack(side=LEFT, padx=(0, 10))
 
-        progress_slider = ttk1.Scale(player_frame, variable=self.progress_value, length=150,
+        self.progress_slider = ttk1.Scale(player_frame, variable=self.progress_value, length=150,
                                      orient="horizontal", command=self.seek)
-        progress_slider.pack(side=RIGHT)
+        self.progress_slider.pack(side=RIGHT)
 
     def create_progressbar_frame(self):
         frame = ttk.Frame(self)
