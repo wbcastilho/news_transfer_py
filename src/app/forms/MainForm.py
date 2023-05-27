@@ -2,11 +2,15 @@ import pathlib
 import shutil
 from tkinter import filedialog
 from tkinter import messagebox
+import tkinter as ttk1
 import ttkbootstrap as ttk
+import tkVideoPlayer
 from ttkbootstrap.constants import *
 from pathlib import Path
 import threading
 import os
+import cv2
+from PIL import Image, ImageTk
 
 from src.app.forms.LogForm import LogsForm
 from src.app.forms.SettingsForm import SettingsForm
@@ -41,6 +45,7 @@ class MainForm(ttk.Frame):
         self.arquivo = ttk.StringVar()
         self.titulo = ttk.StringVar()
         self.grupo = ttk.StringVar()
+        self.progress_value = ttk.IntVar()
 
         self.grupo_values = []
         self.button_action = None
@@ -50,6 +55,7 @@ class MainForm(ttk.Frame):
         self.combobox_grupo = None
         self.progressbar = None
         self.label_porcent = None
+        self.video = None
 
         self.init_database()
         self.read_config()
@@ -57,6 +63,7 @@ class MainForm(ttk.Frame):
         self.associate_icons()
         self.create_buttonbar()
         self.create_enviar_frame()
+        self.create_preview_frame()
         self.create_progressbar_frame()
 
     @staticmethod
@@ -68,7 +75,8 @@ class MainForm(ttk.Frame):
 
     def associate_icons(self) -> None:
         image_files = {
-            'play-icon': 'icons8-reproduzir-24.png',
+            # 'play-icon': 'icons8-reproduzir-24.png',
+            'play-icon': 'icons8-play-24.png',
             'stop-icon': 'icons8-parar-24.png',
             'settings-icon': 'icons8-configuracoes-24.png',
             'log-icon': 'icons8-log-24.png'
@@ -107,7 +115,7 @@ class MainForm(ttk.Frame):
 
     def create_enviar_frame(self) -> None:
         label_frame = ttk.Labelframe(self, text='Enviar')
-        label_frame.pack(fill="x", padx=10, pady=(5, 15))
+        label_frame.pack(side=LEFT, padx=(20, 0), pady=(5, 15))
         frame = ttk.Frame(label_frame)
         frame.pack(fill="x", padx=20, pady=15)
 
@@ -138,6 +146,38 @@ class MainForm(ttk.Frame):
                                         bootstyle='primary', style='primary.TButton')
         self.button_action.grid(row=3, column=0, columnspan=3, padx=0, pady=(20, 0))
 
+    def create_preview_frame(self):
+        label_frame = ttk.Labelframe(self, text='Preview')
+        label_frame.pack(side=RIGHT, padx=(0, 20), pady=(5, 15), anchor=ttk.N)
+
+        frame = ttk.Frame(label_frame)
+        frame.pack(fill="x", padx=20, pady=15)
+
+        video_frame = ttk.Frame(frame, bootstyle="dark", width=275, height=140)
+        video_frame.grid(row=0)
+
+        self.video = tkVideoPlayer.TkinterVideo(video_frame, scaled=True, keep_aspect=True, background="black")
+        # self.video.place(x=0, y=0, width=275, height=140)
+        self.video.bind("<<Duration>>", self.update_duration)
+        self.video.bind("<<SecondChanged>>", self.update_scale)
+        self.video.bind("<<Ended>>", self.video_ended)
+
+        player_frame = ttk.Frame(frame)
+        player_frame.grid(row=1, pady=10)
+
+        btn = ttk.Button(
+            master=player_frame,
+            image='play-icon',
+            bootstyle="light",
+            compound=LEFT,
+            command=self.play
+        )
+        btn.pack(side=LEFT, padx=(0, 10))
+
+        progress_slider = ttk1.Scale(player_frame, variable=self.progress_value, length=150,
+                                     orient="horizontal", command=self.seek)
+        progress_slider.pack(side=RIGHT)
+
     def create_progressbar_frame(self):
         frame = ttk.Frame(self)
         frame.pack(side=LEFT, padx=10, pady=(5, 15))
@@ -151,6 +191,68 @@ class MainForm(ttk.Frame):
 
         self.label_porcent = ttk.Label(frame, text="0%")
         self.label_porcent.pack_forget()
+
+    def load_video(self, file_path):
+        if file_path:
+            print(file_path)
+            self.video.load(file_path)
+            self.video.place(x=0, y=0, width=275, height=140)
+
+    def play(self):
+        self.video.play()
+        # label.place_forget()
+
+    def seek(self, value):
+        self.video.seek(int(value))
+
+    def update_scale(self, event):
+        self.progress_value.set(int(self.video.current_duration()))
+
+    def update_duration(self, event):
+        duration = self.video.video_info()["duration"]
+        self.progress_slider["to"] = duration
+
+    def video_ended(self, event):
+        self.progress_slider.set(self.progress_slider["to"])
+        self.progress_slider.set(0)
+        # label.place(x=1, y=46)
+
+    # def freeze_first_frame_image(video_path):
+    #     cap = cv2.VideoCapture(video_path)
+    #
+    #     # Verificar se o vídeo foi aberto corretamente
+    #     if not cap.isOpened():
+    #         print("Erro ao abrir o vídeo.")
+    #         return
+    #
+    #     # Ler o primeiro quadro do vídeo
+    #     ret, frame = cap.read()
+    #
+    #     # Converter o quadro para o formato RGB
+    #     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    #
+    #     # Criar uma imagem PIL a partir do quadro
+    #     image = Image.fromarray(frame_rgb)
+    #
+    #     # Definir as dimensões
+    #     width = 275
+    #     height = 140
+    #
+    #     # # Calcular a altura proporcionalmente à largura desejada
+    #     # aspect_ratio = image.width / image.height
+    #     # height = int(width / aspect_ratio)
+    #
+    #     # Redimensionar a imagem para o tamanho desejado
+    #     image = image.resize((width, height))
+    #
+    #     # Exibir a imagem no Tkinter
+    #     image_tk = ImageTk.PhotoImage(image)
+    #     label.configure(image=image_tk)
+    #     label.image = image_tk
+    #     label.place(x=1, y=46)
+    #
+    #     # Liberar os recursos
+    #     cap.release()
 
     def transform_uppercase(self, *args):
         self.entry_titulo.configure(bootstyle="default")
@@ -200,6 +302,7 @@ class MainForm(ttk.Frame):
         if filename:
             self.arquivo.set(filename)
             self.entry_arquivo.configure(bootstyle="default")
+            self.load_video(filename)
 
     def on_action(self) -> None:
         if not self.enviar:
