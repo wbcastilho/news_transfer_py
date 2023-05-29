@@ -57,6 +57,8 @@ class MainForm(ttk.Frame):
         self.label_porcent = None
         self.progress_slider = None
         self.video = None
+        self.button_play_pause = None
+        self.label_thumbnail = None
 
         self.init_database()
         self.read_config()
@@ -78,6 +80,7 @@ class MainForm(ttk.Frame):
         image_files = {
             # 'play-icon': 'icons8-reproduzir-24.png',
             'play-icon': 'icons8-play-24.png',
+            'pause-icon': 'icons8-pausa-24.png',
             'stop-icon': 'icons8-parar-24.png',
             'settings-icon': 'icons8-configuracoes-24.png',
             'log-icon': 'icons8-log-24.png'
@@ -157,7 +160,7 @@ class MainForm(ttk.Frame):
         video_frame = ttk.Frame(frame, bootstyle="dark", width=275, height=140)
         video_frame.grid(row=0)
 
-        self.video = tkVideoPlayer.TkinterVideo(video_frame, scaled=True, keep_aspect=True, background="black")
+        self.video = tkVideoPlayer.TkinterVideo(video_frame, scaled=True, background="black")
         # self.video.place(x=0, y=0, width=275, height=140)
         self.video.bind("<<Duration>>", self.update_duration)
         self.video.bind("<<SecondChanged>>", self.update_scale)
@@ -166,18 +169,21 @@ class MainForm(ttk.Frame):
         player_frame = ttk.Frame(frame)
         player_frame.grid(row=1, pady=10)
 
-        btn = ttk.Button(
+        self.button_play_pause = ttk.Button(
             master=player_frame,
             image='play-icon',
             bootstyle="light",
             compound=LEFT,
             command=self.play
         )
-        btn.pack(side=LEFT, padx=(0, 10))
+        self.button_play_pause.pack(side=LEFT, padx=(0, 10))
 
         self.progress_slider = ttk1.Scale(player_frame, variable=self.progress_value, length=150,
                                      orient="horizontal", command=self.seek)
         self.progress_slider.pack(side=RIGHT)
+
+        self.label_thumbnail = ttk.Label(frame, bootstyle="info")
+        # self.label_thumbnail.place(x=0, y=0)
 
     def create_progressbar_frame(self):
         frame = ttk.Frame(self)
@@ -198,10 +204,21 @@ class MainForm(ttk.Frame):
             print(file_path)
             self.video.load(file_path)
             self.video.place(x=0, y=0, width=275, height=140)
+            self.generate_thumbnail(file_path)
 
     def play(self):
-        self.video.play()
-        # label.place_forget()
+        if self.arquivo.get() != '':
+
+            if self.button_play_pause['image'] == ('play-icon',):
+                self.button_play_pause['image'] = 'pause-icon'
+                self.video.play()
+            else:
+                self.button_play_pause['image'] = 'play-icon'
+                self.video.pause()
+
+            self.label_thumbnail.place_forget()
+        else:
+            messagebox.showwarning(title="Atenção", message="Para reproduzir em Preview selecione antes um arquivo.")
 
     def seek(self, value):
         self.video.seek(int(value))
@@ -216,44 +233,45 @@ class MainForm(ttk.Frame):
     def video_ended(self, event):
         self.progress_slider.set(self.progress_slider["to"])
         self.progress_slider.set(0)
-        # label.place(x=1, y=46)
+        self.label_thumbnail.place(x=0, y=0)
 
-    # def freeze_first_frame_image(video_path):
-    #     cap = cv2.VideoCapture(video_path)
-    #
-    #     # Verificar se o vídeo foi aberto corretamente
-    #     if not cap.isOpened():
-    #         print("Erro ao abrir o vídeo.")
-    #         return
-    #
-    #     # Ler o primeiro quadro do vídeo
-    #     ret, frame = cap.read()
-    #
-    #     # Converter o quadro para o formato RGB
-    #     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    #
-    #     # Criar uma imagem PIL a partir do quadro
-    #     image = Image.fromarray(frame_rgb)
-    #
-    #     # Definir as dimensões
-    #     width = 275
-    #     height = 140
-    #
-    #     # # Calcular a altura proporcionalmente à largura desejada
-    #     # aspect_ratio = image.width / image.height
-    #     # height = int(width / aspect_ratio)
-    #
-    #     # Redimensionar a imagem para o tamanho desejado
-    #     image = image.resize((width, height))
-    #
-    #     # Exibir a imagem no Tkinter
-    #     image_tk = ImageTk.PhotoImage(image)
-    #     label.configure(image=image_tk)
-    #     label.image = image_tk
-    #     label.place(x=1, y=46)
-    #
-    #     # Liberar os recursos
-    #     cap.release()
+    def generate_thumbnail(self, video_path):
+        cap = cv2.VideoCapture(video_path)
+
+        # Verificar se o vídeo foi aberto corretamente
+        if not cap.isOpened():
+            print("Erro ao abrir o vídeo.")
+            return
+
+        # Ler o primeiro quadro do vídeo
+        ret, frame = cap.read()
+
+        # Converter o quadro para o formato RGB
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        # Criar uma imagem PIL a partir do quadro
+        image = Image.fromarray(frame_rgb)
+
+        # Definir as dimensões
+        width = 275
+        height = 140
+
+        # # Calcular a altura proporcionalmente à largura desejada
+        # aspect_ratio = image.width / image.height
+        # height = int(width / aspect_ratio)
+
+        # Redimensionar a imagem para o tamanho desejado
+        image = image.resize((width, height))
+
+        # Exibir a imagem no Tkinter
+        image_tk = ImageTk.PhotoImage(image)
+        self.label_thumbnail.configure(image=image_tk)
+        # self.label_thumbnail['image'] = image_tk
+        self.label_thumbnail.image = image_tk
+        self.label_thumbnail.place(x=0, y=0)
+
+        # Liberar os recursos
+        cap.release()
 
     def transform_uppercase(self, *args):
         self.entry_titulo.configure(bootstyle="default")
