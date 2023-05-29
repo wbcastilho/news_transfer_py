@@ -379,9 +379,6 @@ class MainForm(ttk.Frame):
                 self.excluir_arquivos_servidores()
                 LogService.save_warning(f"Transferência cancelada pelo usuário.")
                 messagebox.showwarning(title="Atenção", message="Transferência cancelada pelo usuário.")
-
-            self.label_thumbnail.place_forget()
-            self.video.place_forget()
         except Exception as ex:
             self.excluir_arquivos_servidores()
             self.show_progressbar(False)
@@ -393,6 +390,8 @@ class MainForm(ttk.Frame):
         finally:
             self.enviar = False
             self.change_form_action_state(True)
+            self.label_thumbnail.place_forget()
+            self.video.place_forget()
 
     def copiar_arquivo_e_gerar_xml(self, destino, titulo, arquivo, server):
         self.update_label_progressbar(True, "0%")
