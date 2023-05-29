@@ -65,8 +65,9 @@ class MainForm(ttk.Frame):
         self.init_combobox()
         self.associate_icons()
         self.create_buttonbar()
-        self.create_enviar_frame()
-        self.create_preview_frame()
+        # self.create_enviar_frame()
+        # self.create_preview_frame()
+        self.create_labels_frame()
         self.create_progressbar_frame()
 
     @staticmethod
@@ -117,8 +118,16 @@ class MainForm(ttk.Frame):
         )
         btn.pack(side=LEFT, ipadx=5, ipady=5, padx=0, pady=1)
 
-    def create_enviar_frame(self) -> None:
-        label_frame = ttk.Labelframe(self, text='Enviar')
+    def create_labels_frame(self):
+        frame = ttk.Frame(self)
+        frame.pack(fill="x")
+
+        self.create_enviar_frame(frame)
+        self.create_preview_frame(frame)
+
+    def create_enviar_frame(self, parent) -> None:
+        # label_frame = ttk.Labelframe(self, text='Enviar')
+        label_frame = ttk.Labelframe(parent, text='Enviar')
         label_frame.pack(side=LEFT, padx=(20, 0), pady=(5, 15))
         frame = ttk.Frame(label_frame)
         frame.pack(fill="x", padx=20, pady=15)
@@ -150,9 +159,9 @@ class MainForm(ttk.Frame):
                                         bootstyle='primary', style='primary.TButton')
         self.button_action.grid(row=3, column=0, columnspan=3, padx=0, pady=(20, 0))
 
-    def create_preview_frame(self):
-        label_frame = ttk.Labelframe(self, text='Preview')
-        label_frame.pack(side=RIGHT, padx=(0, 20), pady=(5, 15), anchor=ttk.N)
+    def create_preview_frame(self, parent):
+        label_frame = ttk.Labelframe(parent, text='Preview')
+        label_frame.pack(side=RIGHT, padx=20, pady=(5, 15), anchor=ttk.N)
 
         frame = ttk.Frame(label_frame)
         frame.pack(fill="x", padx=20, pady=15)
@@ -187,8 +196,9 @@ class MainForm(ttk.Frame):
         # self.label_thumbnail.place(x=0, y=0)
 
     def create_progressbar_frame(self):
-        frame = ttk.Frame(self)
-        frame.pack(side=LEFT, padx=10, pady=(5, 15))
+        frame = ttk.Frame(self, height=20)
+        # frame.pack(fill="x", padx=10, pady=(5, 15))
+        frame.pack(side=LEFT, padx=20, pady=(5, 15))
 
         self.progressbar = ttk.Progressbar(
             master=frame,
@@ -344,6 +354,8 @@ class MainForm(ttk.Frame):
         self.change_form_action_state(False)
 
         try:
+            self.video.stop()
+
             self.copiar_arquivo_e_gerar_xml(self.configuration["servidor"], self.titulo.get(), self.arquivo.get(),
                                             "Servidor 1")
 
@@ -367,6 +379,9 @@ class MainForm(ttk.Frame):
                 self.excluir_arquivos_servidores()
                 LogService.save_warning(f"Transferência cancelada pelo usuário.")
                 messagebox.showwarning(title="Atenção", message="Transferência cancelada pelo usuário.")
+
+            self.label_thumbnail.place_forget()
+            self.video.place_forget()
         except Exception as ex:
             self.excluir_arquivos_servidores()
             self.show_progressbar(False)
