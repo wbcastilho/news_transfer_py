@@ -167,7 +167,7 @@ class MainForm(ttk.Frame):
         self.video.bind("<<Ended>>", self.video_ended)
 
         player_frame = ttk.Frame(frame)
-        player_frame.grid(row=1, pady=10)
+        player_frame.grid(row=1, pady=(10, 4))
 
         self.button_play_pause = ttk.Button(
             master=player_frame,
@@ -179,8 +179,9 @@ class MainForm(ttk.Frame):
         self.button_play_pause.pack(side=LEFT, padx=(0, 10))
 
         self.progress_slider = ttk1.Scale(player_frame, variable=self.progress_value, length=150,
-                                     orient="horizontal", command=self.seek)
+                                          orient="horizontal", command=self.seek)
         self.progress_slider.pack(side=RIGHT)
+        self.progress_slider.configure(state="disabled")
 
         self.label_thumbnail = ttk.Label(frame, bootstyle="info")
         # self.label_thumbnail.place(x=0, y=0)
@@ -211,6 +212,7 @@ class MainForm(ttk.Frame):
 
             if self.button_play_pause['image'] == ('play-icon',):
                 self.button_play_pause['image'] = 'pause-icon'
+                self.progress_slider.configure(state="normal")
                 self.video.play()
             else:
                 self.button_play_pause['image'] = 'play-icon'
@@ -234,6 +236,8 @@ class MainForm(ttk.Frame):
         self.progress_slider.set(self.progress_slider["to"])
         self.progress_slider.set(0)
         self.label_thumbnail.place(x=0, y=0)
+        self.progress_slider.configure(state="disabled")
+        self.button_play_pause['image'] = 'play-icon'
 
     def generate_thumbnail(self, video_path):
         cap = cv2.VideoCapture(video_path)
@@ -266,7 +270,6 @@ class MainForm(ttk.Frame):
         # Exibir a imagem no Tkinter
         image_tk = ImageTk.PhotoImage(image)
         self.label_thumbnail.configure(image=image_tk)
-        # self.label_thumbnail['image'] = image_tk
         self.label_thumbnail.image = image_tk
         self.label_thumbnail.place(x=0, y=0)
 
