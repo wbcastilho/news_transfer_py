@@ -356,12 +356,14 @@ class MainForm(ttk.Frame):
         try:
             self.video.stop()
 
+            codigo_material = MyRandom.gerar_codigo()
+
             self.copiar_arquivo_e_gerar_xml(self.configuration["servidor"], self.titulo.get(), self.arquivo.get(),
-                                            "Servidor 1")
+                                            "Servidor 1", codigo_material)
 
             if self.configuration["habilitar_servidor2"] == 1:
                 self.copiar_arquivo_e_gerar_xml(self.configuration["servidor2"], self.titulo.get(), self.arquivo.get(),
-                                                "Servidor 2")
+                                                "Servidor 2", codigo_material)
 
             result_destino1 = self.checar_ack(self.configuration["servidor"], self.titulo.get())
 
@@ -393,7 +395,7 @@ class MainForm(ttk.Frame):
             self.label_thumbnail.place_forget()
             self.video.place_forget()
 
-    def copiar_arquivo_e_gerar_xml(self, destino, titulo, arquivo, server):
+    def copiar_arquivo_e_gerar_xml(self, destino, titulo, arquivo, server, codigo_material):
         self.update_label_progressbar(True, "0%")
         self.copy_with_callback(arquivo,
                                 f'{destino}\\{titulo}.mxf',
@@ -402,7 +404,7 @@ class MainForm(ttk.Frame):
                                 callback=None
                                 )
         self.update_label_progressbar(False, f"Gerando arquivo xml {server}")
-        self.gerar_xml(destino, titulo, arquivo)
+        self.gerar_xml(destino, titulo, arquivo, codigo_material)
 
     def copy_with_callback(self, src, dest, server, callback=None, follow_symlinks=True):
         try:
@@ -470,10 +472,10 @@ class MainForm(ttk.Frame):
             if callback is not None:
                 callback(len(buf), copied, total)
 
-    def gerar_xml(self, servidor, titulo, arquivo):
+    def gerar_xml(self, servidor, titulo, arquivo, codigo):
         try:
             dto = {
-                'codigo': MyRandom.gerar_codigo(),
+                'codigo': codigo,
                 'arquivo': f"{titulo}.mxf",
                 'titulo': titulo,
                 'grupo': self.grupo.get(),
