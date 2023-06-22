@@ -358,17 +358,17 @@ class MainForm(ttk.Frame):
 
             codigo_material = MyRandom.gerar_codigo()
 
-            self.copiar_arquivo_e_gerar_xml(self.configuration["servidor"], self.titulo.get(), self.arquivo.get(),
-                                            "Servidor 1", codigo_material)
-
             if self.configuration["habilitar_servidor2"] == 1:
                 self.copiar_arquivo_e_gerar_xml(self.configuration["servidor2"], self.titulo.get(), self.arquivo.get(),
                                                 "Servidor 2", codigo_material)
 
-            result_destino1 = self.checar_ack(self.configuration["servidor"], self.titulo.get())
+            self.copiar_arquivo_e_gerar_xml(self.configuration["servidor"], self.titulo.get(), self.arquivo.get(),
+                                            "Servidor 1", codigo_material)
 
             if self.configuration["habilitar_servidor2"] == 1:
                 result_destino2 = self.checar_ack(self.configuration["servidor2"], self.titulo.get())
+
+            result_destino1 = self.checar_ack(self.configuration["servidor"], self.titulo.get())
 
             self.show_progressbar(False)
             self.update_label_progressbar(True, "100%")
