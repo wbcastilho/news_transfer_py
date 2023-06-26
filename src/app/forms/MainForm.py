@@ -358,12 +358,23 @@ class MainForm(ttk.Frame):
 
             codigo_material = MyRandom.gerar_codigo()
 
-            if self.configuration["habilitar_servidor2"] == 1:
-                self.copiar_arquivo_e_gerar_xml(self.configuration["servidor2"], self.titulo.get(), self.arquivo.get(),
-                                                "Servidor 2", codigo_material)
+            thread1 = threading.Thread(daemon=True,
+                                       target=self.copiar_arquivo_e_gerar_xml,
+                                       args=(self.configuration["servidor2"], self.titulo.get(), self.arquivo.get(),
+                                             "Servidor 2", codigo_material))
 
-            self.copiar_arquivo_e_gerar_xml(self.configuration["servidor"], self.titulo.get(), self.arquivo.get(),
-                                            "Servidor 1", codigo_material)
+            thread2 = threading.Thread(daemon=True,
+                                       target=self.copiar_arquivo_e_gerar_xml,
+                                       args=(self.configuration["servidor"], self.titulo.get(), self.arquivo.get(),
+                                        "Servidor 1", codigo_material))
+
+            # Inicia as threads
+            thread1.start()
+            thread2.start()
+
+            # Aguarda o término das threads
+            thread1.join()
+            thread2.join()
 
             if self.configuration["habilitar_servidor2"] == 1:
                 result_destino2 = self.checar_ack(self.configuration["servidor2"], self.titulo.get())
@@ -394,6 +405,15 @@ class MainForm(ttk.Frame):
             self.change_form_action_state(True)
             self.label_thumbnail.place_forget()
             self.video.place_forget()
+
+    def copiar_servidor_2(self, codigo):
+        if self.configuration["habilitar_servidor2"] == 1:
+            self.copiar_arquivo_e_gerar_xml(self.configuration["servidor2"], self.titulo.get(), self.arquivo.get(),
+                                            "Servidor 2", codigo)
+
+    def copiar_servidor_1(self, codigo):
+        self.copiar_arquivo_e_gerar_xml(self.configuration["servidor"], self.titulo.get(), self.arquivo.get(),
+                                        "Servidor 1", codigo)
 
     def copiar_arquivo_e_gerar_xml(self, destino, titulo, arquivo, server, codigo_material):
         self.update_label_progressbar(True, "0%")
