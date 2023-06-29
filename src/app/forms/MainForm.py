@@ -41,6 +41,8 @@ class MainForm(ttk.Frame):
         }
         self.photo_images = []
         self.enviar = False
+        self.situacao_copia_servidor1 = False
+        self.situacao_copia_servidor2 = False
 
         self.arquivo = ttk.StringVar()
         self.titulo = ttk.StringVar()
@@ -55,6 +57,8 @@ class MainForm(ttk.Frame):
         self.combobox_grupo = None
         self.progressbar = None
         self.label_porcent = None
+        self.progressbar2 = None
+        self.label_porcent2 = None
         self.progress_slider = None
         self.video = None
         self.button_play_pause = None
@@ -126,7 +130,6 @@ class MainForm(ttk.Frame):
         self.create_preview_frame(frame)
 
     def create_enviar_frame(self, parent) -> None:
-        # label_frame = ttk.Labelframe(self, text='Enviar')
         label_frame = ttk.Labelframe(parent, text='Enviar')
         label_frame.pack(side=LEFT, padx=(20, 0), pady=(5, 15))
         frame = ttk.Frame(label_frame)
@@ -170,7 +173,6 @@ class MainForm(ttk.Frame):
         video_frame.grid(row=0)
 
         self.video = tkVideoPlayer.TkinterVideo(video_frame, scaled=True, background="black")
-        # self.video.place(x=0, y=0, width=275, height=140)
         self.video.bind("<<Duration>>", self.update_duration)
         self.video.bind("<<SecondChanged>>", self.update_scale)
         self.video.bind("<<Ended>>", self.video_ended)
@@ -197,18 +199,36 @@ class MainForm(ttk.Frame):
 
     def create_progressbar_frame(self):
         frame = ttk.Frame(self, height=20)
-        # frame.pack(fill="x", padx=10, pady=(5, 15))
         frame.pack(side=LEFT, padx=20, pady=(5, 15))
 
         self.progressbar = ttk.Progressbar(
             master=frame,
             length=300,
+            # mode='indeterminate',
             bootstyle="success"
         )
         self.progressbar.pack_forget()
+        # self.progressbar.pack(side=LEFT)
 
         self.label_porcent = ttk.Label(frame, text="0%")
         self.label_porcent.pack_forget()
+        # self.label_porcent.pack(side=LEFT)
+
+        frame2 = ttk.Frame(self, height=20)
+        frame2.pack(side=LEFT, padx=20, pady=(5, 15))
+
+        self.progressbar2 = ttk.Progressbar(
+            master=frame2,
+            length=300,
+            # mode='indeterminate',
+            bootstyle="success"
+        )
+        self.progressbar2.pack_forget()
+        # self.progressbar2.pack(side=LEFT)
+
+        self.label_porcent2 = ttk.Label(frame2, text="0%")
+        self.label_porcent2.pack_forget()
+        # self.label_porcent2.pack(side=LEFT)
 
     def load_video(self, file_path):
         if file_path:
@@ -350,6 +370,9 @@ class MainForm(ttk.Frame):
             self.change_button_action_state(True)
 
     def background_worker(self):
+        self.situacao_copia_servidor1 = False
+        self.situacao_copia_servidor2 = False
+
         self.change_form_action_state(False)
 
         try:
@@ -375,12 +398,15 @@ class MainForm(ttk.Frame):
             thread1.join()
             thread2.join()
 
-            if self.configuration["habilitar_servidor2"] == 1:
+            if self.configuration["habilitar_servidor2"] == 1 and self.situacao_copia_servidor2:
                 result_destino2 = self.checar_ack(self.configuration["servidor2"], self.titulo.get())
             else:
                 result_destino2 = False
 
-            result_destino1 = self.checar_ack(self.configuration["servidor"], self.titulo.get())
+            if self.situacao_copia_servidor1:
+                result_destino1 = self.checar_ack(self.configuration["servidor"], self.titulo.get())
+            else:
+                result_destino1 = False
 
             self.show_progressbar(False)
             self.update_label_progressbar(True, "100%")
@@ -409,10 +435,18 @@ class MainForm(ttk.Frame):
 
     def copiar_servidor_2(self, destino, titulo, arquivo, server, codigo_material):
         if self.configuration["habilitar_servidor2"] == 1:
-            self.copiar_arquivo_e_gerar_xml(destino, titulo, arquivo, server, codigo_material)
+            try:
+                self.copiar_arquivo_e_gerar_xml(destino, titulo, arquivo, server, codigo_material)
+                self.situacao_copia_servidor2 = True
+            except:
+                self.situacao_copia_servidor2 = False
 
     def copiar_servidor_1(self, destino, titulo, arquivo, server, codigo_material):
-        self.copiar_arquivo_e_gerar_xml(destino, titulo, arquivo, server, codigo_material)
+        try:
+            self.copiar_arquivo_e_gerar_xml(destino, titulo, arquivo, server, codigo_material)
+            self.situacao_copia_servidor1 = True
+        except:
+            self.situacao_copia_servidor1 = False
 
     def copiar_arquivo_e_gerar_xml(self, destino, titulo, arquivo, server, codigo_material):
         self.update_label_progressbar(True, "0%")
@@ -598,31 +632,57 @@ class MainForm(ttk.Frame):
         MyFile.excluir_arquivo_xml(caminho, nome_arquivo)
         MyFile.excluir_arquivo_ack(caminho, nome_arquivo)
 
-    def update_progress(self, copied: float, total: float, server: str) -> None:
+    def update_progress(self, copied: float, total: float, server_name: str, server=1) -> None:
         porcent = int((copied * 100) / total)
-        if self.progressbar['value'] < 100:
-            self.progressbar['value'] = porcent
-            self.label_porcent["text"] = f"{porcent}% - Transferindo para {server}"
 
-    def show_progressbar(self, value: bool) -> None:
-        if value:
-            self.progressbar.pack(side=LEFT, padx=1, expand=YES)
-            self.label_porcent.pack(side=LEFT, padx=1, expand=YES)
+        if server == 1:
+            if self.progressbar['value'] < 100:
+                self.progressbar['value'] = porcent
+                self.label_porcent["text"] = f"{porcent}% - Transferindo para {server_name}"
         else:
-            self.progressbar.pack_forget()
-            self.label_porcent.pack_forget()
+            if self.progressbar2['value'] < 100:
+                self.progressbar2['value'] = porcent
+                self.label_porcent2["text"] = f"{porcent}% - Transferindo para {server_name}"
 
-    def set_progressbar_determinate(self, value: bool) -> None:
-        if value:
-            self.progressbar.stop()
-            self.progressbar["mode"] = "determinate"
+    def show_progressbar(self, value: bool, server=1) -> None:
+        if server == 1:
+            if value:
+                self.progressbar.pack(side=LEFT, padx=1, expand=YES)
+                self.label_porcent.pack(side=LEFT, padx=1, expand=YES)
+            else:
+                self.progressbar.pack_forget()
+                self.label_porcent.pack_forget()
         else:
-            self.progressbar["mode"] = "indeterminate"
-            self.progressbar.start()
+            if value:
+                self.progressbar2.pack(side=LEFT, padx=1, expand=YES)
+                self.label_porcent2.pack(side=LEFT, padx=1, expand=YES)
+            else:
+                self.progressbar2.pack_forget()
+                self.label_porcent2.pack_forget()
 
-    def update_label_progressbar(self, determinate: bool, text: str) -> None:
-        self.set_progressbar_determinate(determinate)
-        self.label_porcent["text"] = text
+    def set_progressbar_determinate(self, value: bool, server=1) -> None:
+        if server == 1:
+            if value:
+                self.progressbar.stop()
+                self.progressbar["mode"] = "determinate"
+            else:
+                self.progressbar["mode"] = "indeterminate"
+                self.progressbar.start()
+        else:
+            if value:
+                self.progressbar2.stop()
+                self.progressbar2["mode"] = "determinate"
+            else:
+                self.progressbar2["mode"] = "indeterminate"
+                self.progressbar2.start()
+
+    def update_label_progressbar(self, determinate: bool, text: str, server=1) -> None:
+        if server == 1:
+            self.set_progressbar_determinate(determinate)
+            self.label_porcent["text"] = text
+        else:
+            self.set_progressbar_determinate(determinate, 2)
+            self.label_porcent2["text"] = text
 
     def change_button_action_state(self, value: bool) -> None:
         if value:
