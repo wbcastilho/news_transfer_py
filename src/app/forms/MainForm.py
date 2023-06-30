@@ -362,6 +362,7 @@ class MainForm(ttk.Frame):
                 self.enviar = True
                 self.change_button_action_state(False)
                 self.show_progressbar(True)
+                self.show_progressbar(True, 2)
 
                 t = threading.Thread(daemon=True, target=self.background_worker)
                 t.start()
@@ -409,7 +410,9 @@ class MainForm(ttk.Frame):
                 result_destino1 = False
 
             self.show_progressbar(False)
+            self.show_progressbar(False, 2)
             self.update_label_progressbar(True, "100%")
+            self.update_label_progressbar(True, "100%", 2)
             self.change_button_action_state(True)
 
             if self.enviar:
@@ -422,8 +425,11 @@ class MainForm(ttk.Frame):
         except Exception as ex:
             self.excluir_arquivos_servidores()
             self.show_progressbar(False)
+            self.show_progressbar(False, 2)
             self.set_progressbar_determinate(True)
+            self.set_progressbar_determinate(True, 2)
             self.label_porcent["text"] = "0%"
+            self.label_porcent2["text"] = "0%"
             self.change_button_action_state(True)
             LogService.save_error(f"{ex}")
             messagebox.showerror(title="Erro", message=ex)
@@ -436,7 +442,7 @@ class MainForm(ttk.Frame):
     def copiar_servidor_2(self, destino, titulo, arquivo, server, codigo_material):
         if self.configuration["habilitar_servidor2"] == 1:
             try:
-                self.copiar_arquivo_e_gerar_xml(destino, titulo, arquivo, server, codigo_material)
+                self.copiar_arquivo_e_gerar_xml(destino, titulo, arquivo, server, codigo_material, 2)
                 self.situacao_copia_servidor2 = True
             except:
                 self.situacao_copia_servidor2 = False
@@ -448,18 +454,19 @@ class MainForm(ttk.Frame):
         except:
             self.situacao_copia_servidor1 = False
 
-    def copiar_arquivo_e_gerar_xml(self, destino, titulo, arquivo, server, codigo_material):
-        self.update_label_progressbar(True, "0%")
+    def copiar_arquivo_e_gerar_xml(self, destino, titulo, arquivo, server_name, codigo_material, server=1):
+        self.update_label_progressbar(True, "0%", server)
         self.copy_with_callback(arquivo,
                                 f'{destino}\\{titulo}.mxf',
-                                server,
-                                follow_symlinks=False,
-                                callback=None
+                                server_name,
+                                None,
+                                False,
+                                server
                                 )
-        self.update_label_progressbar(False, f"Gerando arquivo xml {server}")
+        self.update_label_progressbar(False, f"Gerando arquivo xml {server_name}", server)
         self.gerar_xml(destino, titulo, arquivo, codigo_material)
 
-    def copy_with_callback(self, src, dest, server, callback=None, follow_symlinks=True):
+    def copy_with_callback(self, src, dest, server_name, callback=None, follow_symlinks=True, server=1):
         try:
             buffer_size = 4096 * 1024
             srcfile = pathlib.Path(src)
@@ -498,19 +505,24 @@ class MainForm(ttk.Frame):
                 with open(srcfile, "rb") as fsrc:
                     with open(destfile, "wb") as fdest:
                         self.copy_file(
-                            fsrc, fdest, server, callback=callback, total=size, length=buffer_size
+                            fsrc, fdest, server_name, callback, size, buffer_size, server
                         )
             shutil.copymode(str(srcfile), str(destfile))
             return str(destfile)
         except Exception as ex:
             raise Exception(f"Falha ao copiar arquivo. {ex}")
 
-    def copy_file(self, fsrc, fdest, server, callback, total, length):
+    def copy_file(self, fsrc, fdest, server_name, callback, total, length, server=1):
         copied = 0
         while True:
             if not self.enviar:
-                self.set_progressbar_determinate(False)
-                self.label_porcent["text"] = "Cancelando..."
+                if server == 1:
+                    self.set_progressbar_determinate(False)
+                    self.label_porcent["text"] = "Cancelando copia para Servidor 1"
+                else:
+                    self.set_progressbar_determinate(False, 2)
+                    self.label_porcent2["text"] = "Cancelando copia para Servidor 2"
+
                 break
 
             buf = fsrc.read(length)
@@ -520,7 +532,10 @@ class MainForm(ttk.Frame):
             fdest.write(buf)
             copied += len(buf)
 
-            self.update_progress(copied, total, server)
+            if server == 1:
+                self.update_progress(copied, total, server_name)
+            else:
+                self.update_progress(copied, total, server_name, 2)
 
             if callback is not None:
                 callback(len(buf), copied, total)
