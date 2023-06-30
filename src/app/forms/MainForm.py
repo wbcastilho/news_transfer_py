@@ -43,6 +43,8 @@ class MainForm(ttk.Frame):
         self.enviar = False
         self.situacao_copia_servidor1 = False
         self.situacao_copia_servidor2 = False
+        self.result_destino1 = False
+        self.result_destino2 = False
 
         self.arquivo = ttk.StringVar()
         self.titulo = ttk.StringVar()
@@ -399,15 +401,16 @@ class MainForm(ttk.Frame):
             thread1.join()
             thread2.join()
 
-            if self.configuration["habilitar_servidor2"] == 1 and self.situacao_copia_servidor2:
-                result_destino2 = self.checar_ack(self.configuration["servidor2"], self.titulo.get())
-            else:
-                result_destino2 = False
+            thread3 = threading.Thread(daemon=True, target=self.checar_ack_servidor_2)
+            thread4 = threading.Thread(daemon=True, target=self.checar_ack_servidor_1)
 
-            if self.situacao_copia_servidor1:
-                result_destino1 = self.checar_ack(self.configuration["servidor"], self.titulo.get())
-            else:
-                result_destino1 = False
+            # Inicia as threads
+            thread3.start()
+            thread4.start()
+
+            # Aguarda o término das threads
+            thread3.join()
+            thread4.join()
 
             self.show_progressbar(False)
             self.show_progressbar(False, 2)
@@ -416,7 +419,7 @@ class MainForm(ttk.Frame):
             self.change_button_action_state(True)
 
             if self.enviar:
-                self.exibir_messagebox_concluido(result_destino1, result_destino2)
+                self.exibir_messagebox_concluido(self.result_destino1, self.result_destino2)
                 self.clean_fields()
             else:
                 self.excluir_arquivos_servidores()
@@ -439,7 +442,20 @@ class MainForm(ttk.Frame):
             self.label_thumbnail.place_forget()
             self.video.place_forget()
 
+    def checar_ack_servidor_2(self):
+        if self.configuration["habilitar_servidor2"] == 1 and self.situacao_copia_servidor2:
+            self.result_destino2 = self.checar_ack(self.configuration["servidor2"], self.titulo.get(), 2)
+        else:
+            self.result_destino2 = False
+
+    def checar_ack_servidor_1(self):
+        if self.situacao_copia_servidor1:
+            self.result_destino1 = self.checar_ack(self.configuration["servidor"], self.titulo.get())
+        else:
+            self.result_destino1 = False
+
     def copiar_servidor_2(self, destino, titulo, arquivo, server, codigo_material):
+        print("copia_servidor_2")
         if self.configuration["habilitar_servidor2"] == 1:
             try:
                 self.copiar_arquivo_e_gerar_xml(destino, titulo, arquivo, server, codigo_material, 2)
@@ -448,6 +464,7 @@ class MainForm(ttk.Frame):
                 self.situacao_copia_servidor2 = False
 
     def copiar_servidor_1(self, destino, titulo, arquivo, server, codigo_material):
+        print("copia_servidor_1")
         try:
             self.copiar_arquivo_e_gerar_xml(destino, titulo, arquivo, server, codigo_material)
             self.situacao_copia_servidor1 = True
@@ -464,6 +481,7 @@ class MainForm(ttk.Frame):
                                 server
                                 )
         self.update_label_progressbar(False, f"Gerando arquivo xml {server_name}", server)
+        print("Gerar xml " + str(server))
         self.gerar_xml(destino, titulo, arquivo, codigo_material)
 
     def copy_with_callback(self, src, dest, server_name, callback=None, follow_symlinks=True, server=1):
@@ -556,16 +574,25 @@ class MainForm(ttk.Frame):
         except Exception as ex:
             raise Exception(f"Falha ao gerar arquivo xml. {ex}")
 
-    def checar_ack(self, caminho, nome_arquivo) -> bool:
+    def checar_ack(self, caminho, nome_arquivo, server=1) -> bool:
         try:
-            self.label_porcent["text"] = "Aguardando arquivo de confirmação..."
+            print("checar_ack " + str(server))
+            if server == 1:
+                self.label_porcent["text"] = "Aguardando arquivo ACK para o Servidor 1"
+            else:
+                self.label_porcent2["text"] = "Aguardando arquivo ACK para o Servidor 2"
+
             arquivo = os.path.join(caminho, f"{nome_arquivo}.ack")
             stop_watch = StopWatch()
 
             while True:
                 if not self.enviar:
-                    self.set_progressbar_determinate(False)
-                    self.label_porcent["text"] = "Cancelando..."
+                    if server == 1:
+                        self.set_progressbar_determinate(False)
+                        self.label_porcent["text"] = "Cancelando checagem ACK Servidor 1"
+                    else:
+                        self.set_progressbar_determinate(False, 2)
+                        self.label_porcent2["text"] = "Cancelando checagem ACK Servidor 2"
                     return False
 
                 if not stop_watch.check(self.configuration["timeout_ack"]):
@@ -574,8 +601,13 @@ class MainForm(ttk.Frame):
                 if os.path.exists(arquivo):
                     while True:
                         if not self.enviar:
-                            self.set_progressbar_determinate(False)
-                            self.label_porcent["text"] = "Cancelando..."
+                            if server == 1:
+                                self.set_progressbar_determinate(False)
+                                self.label_porcent["text"] = "Cancelando checagem ACK Servidor"
+                            else:
+                                self.set_progressbar_determinate(False, 2)
+                                self.label_porcent2["text"] = "Cancelando checagem ACK Servidor 2"
+
                             return False
 
                         try:
