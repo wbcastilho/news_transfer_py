@@ -393,22 +393,22 @@ class MainForm(ttk.Frame):
                                        args=(self.configuration["servidor"], self.titulo.get(), self.arquivo.get(),
                                              "Servidor 1", codigo_material))
 
-            # Inicia as threads
+            # Inicia as threads 1 e 2
             thread1.start()
             thread2.start()
 
-            # Aguarda o término das threads
+            # Aguarda o término das threads 1 e 2
             thread1.join()
             thread2.join()
 
             thread3 = threading.Thread(daemon=True, target=self.checar_ack_servidor_2)
             thread4 = threading.Thread(daemon=True, target=self.checar_ack_servidor_1)
 
-            # Inicia as threads
+            # Inicia as threads 3 e 4
             thread3.start()
             thread4.start()
 
-            # Aguarda o término das threads
+            # Aguarda o término das threads 3 e 4
             thread3.join()
             thread4.join()
 
@@ -421,6 +421,8 @@ class MainForm(ttk.Frame):
             if self.enviar:
                 self.exibir_messagebox_concluido(self.result_destino1, self.result_destino2)
                 self.clean_fields()
+                self.label_thumbnail.place_forget()
+                self.video.place_forget()
             else:
                 self.excluir_arquivos_servidores()
                 LogService.save_warning(f"Transferência cancelada pelo usuário.")
@@ -434,13 +436,14 @@ class MainForm(ttk.Frame):
             self.label_porcent["text"] = "0%"
             self.label_porcent2["text"] = "0%"
             self.change_button_action_state(True)
+            self.clean_fields()
+            self.label_thumbnail.place_forget()
+            self.video.place_forget()
             LogService.save_error(f"{ex}")
             messagebox.showerror(title="Erro", message=ex)
         finally:
             self.enviar = False
             self.change_form_action_state(True)
-            self.label_thumbnail.place_forget()
-            self.video.place_forget()
 
     def checar_ack_servidor_2(self):
         if self.configuration["habilitar_servidor2"] == 1 and self.situacao_copia_servidor2:
