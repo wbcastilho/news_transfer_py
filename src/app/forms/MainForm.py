@@ -436,9 +436,6 @@ class MainForm(ttk.Frame):
             self.label_porcent["text"] = "0%"
             self.label_porcent2["text"] = "0%"
             self.change_button_action_state(True)
-            self.clean_fields()
-            self.label_thumbnail.place_forget()
-            self.video.place_forget()
             LogService.save_error(f"{ex}")
             messagebox.showerror(title="Erro", message=ex)
         finally:
@@ -578,62 +575,83 @@ class MainForm(ttk.Frame):
             raise Exception(f"Falha ao gerar arquivo xml. {ex}")
 
     def checar_ack(self, caminho, nome_arquivo, server=1) -> bool:
-        try:
-            print("checar_ack " + str(server))
-            if server == 1:
-                self.label_porcent["text"] = "Aguardando arquivo ACK para o Servidor 1"
-            else:
-                self.label_porcent2["text"] = "Aguardando arquivo ACK para o Servidor 2"
+        print("checar_ack " + str(server))
+        if server == 1:
+            self.label_porcent["text"] = "Aguardando arquivo ACK para o Servidor 1"
+        else:
+            self.label_porcent2["text"] = "Aguardando arquivo ACK para o Servidor 2"
 
-            arquivo = os.path.join(caminho, f"{nome_arquivo}.ack")
-            stop_watch = StopWatch()
+        arquivo = os.path.join(caminho, f"{nome_arquivo}.ack")
+        stop_watch = StopWatch()
 
-            while True:
-                if not self.enviar:
-                    if server == 1:
-                        self.set_progressbar_determinate(False)
-                        self.label_porcent["text"] = "Cancelando checagem ACK Servidor 1"
-                    else:
-                        self.set_progressbar_determinate(False, 2)
-                        self.label_porcent2["text"] = "Cancelando checagem ACK Servidor 2"
-                    return False
+        while True:
+            if not self.enviar:
+                if server == 1:
+                    self.set_progressbar_determinate(False)
+                    self.label_porcent["text"] = "Cancelando checagem ACK Servidor 1"
+                else:
+                    self.set_progressbar_determinate(False, 2)
+                    self.label_porcent2["text"] = "Cancelando checagem ACK Servidor 2"
+                return False
 
-                if not stop_watch.check(self.configuration["timeout_ack"]):
-                    raise Exception(f"Tempo de espera excedido para receber o arquivo de checagem.")
+            if not stop_watch.check(self.configuration["timeout_ack"]):
+                raise Exception(f"Tempo de espera excedido para receber o arquivo de checagem")
 
-                if os.path.exists(arquivo):
-                    while True:
-                        if not self.enviar:
+            if os.path.exists(arquivo):
+                while True:
+                    if not self.enviar:
+                        if server == 1:
+                            self.set_progressbar_determinate(False)
+                            self.label_porcent["text"] = "Cancelando checagem ACK Servidor"
+                        else:
+                            self.set_progressbar_determinate(False, 2)
+                            self.label_porcent2["text"] = "Cancelando checagem ACK Servidor 2"
+
+                        return False
+
+                    try:
+                        result = AckXML.read(caminho=caminho, arquivo=f"{nome_arquivo}.ack")
+                        os.remove(arquivo)
+                        break
+                    except Exception:
+                        if stop_watch.check(self.configuration["timeout_ack"]):
+                            continue
+                        else:
                             if server == 1:
                                 self.set_progressbar_determinate(False)
-                                self.label_porcent["text"] = "Cancelando checagem ACK Servidor"
+                                self.label_porcent["text"] = "Falha ao receber excluir arquivo Servidor 1"
                             else:
                                 self.set_progressbar_determinate(False, 2)
-                                self.label_porcent2["text"] = "Cancelando checagem ACK Servidor 2"
-
+                                self.label_porcent2["text"] = "Falha ao receber arquivo Servidor 2"
                             return False
 
-                        try:
-                            result = AckXML.read(caminho=caminho, arquivo=f"{nome_arquivo}.ack")
-                            os.remove(arquivo)
-                            break
-                        except Exception:
-                            if stop_watch.check(self.configuration["timeout_ack"]):
-                                continue
-                            else:
-                                raise Exception(f"Falha ao receber excluir arquivo {nome_arquivo}.ack")
-
-                    if result[0] == "0":
-                        return True
-                    elif result[0] == "4" \
-                            or result[0] == "8" \
-                            or result[0] == "9" \
-                            or result[0] == "10":
-                        raise Exception(f"Falha ao receber arquivo de confirmação. {result[1]}")
+                if result[0] == "0":
+                    if server == 1:
+                        self.progressbar.pack_forget()
+                        self.label_porcent["text"] = "Arquivo ACK do Servidor 1 recebido com sucesso"
                     else:
-                        raise Exception("Erro desconhecido ao receber arquivo de confirmação.")
-        except Exception as ex:
-            raise Exception(ex)
+                        self.progressbar2.pack_forget()
+                        self.label_porcent2["text"] = "Arquivo ACK do Servidor 2 recebido com sucesso"
+                    return True
+                elif result[0] == "4" \
+                        or result[0] == "8" \
+                        or result[0] == "9" \
+                        or result[0] == "10":
+                    if server == 1:
+                        self.set_progressbar_determinate(False)
+                        self.label_porcent["text"] = "Falha ao receber arquivo ACK Servidor 1"
+                    else:
+                        self.set_progressbar_determinate(False, 2)
+                        self.label_porcent2["text"] = "Falha ao receber arquivo ACK Servidor 2"
+                    return False
+                else:
+                    if server == 1:
+                        self.set_progressbar_determinate(False)
+                        self.label_porcent["text"] = "Erro desconhecido ao receber arquivo ACK Servidor 1"
+                    else:
+                        self.set_progressbar_determinate(False, 2)
+                        self.label_porcent2["text"] = "Erro desconhecido ao receber arquivo ACK Servidor 2"
+                    return False
 
     def exibir_messagebox_concluido(self, result_destino1, result_destino2) -> None:
         if self.configuration["habilitar_servidor2"] == 0 and result_destino1:
