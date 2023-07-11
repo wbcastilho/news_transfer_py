@@ -4,7 +4,7 @@ import ttkbootstrap as ttk
 
 if __name__ == '__main__':
     app = ttk.Window(
-        title="News Transfer - 2.4",
+        title="News Transfer - 2.5",
         resizable=(False, False)
     )
 

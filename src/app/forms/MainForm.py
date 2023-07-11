@@ -45,6 +45,9 @@ class MainForm(ttk.Frame):
         self.situacao_copia_servidor2 = False
         self.result_destino1 = False
         self.result_destino2 = False
+        self.timeout_ack = False
+        self.timeout_copy = False
+        self.stop_watch = None
 
         self.arquivo = ttk.StringVar()
         self.titulo = ttk.StringVar()
@@ -206,15 +209,12 @@ class MainForm(ttk.Frame):
         self.progressbar = ttk.Progressbar(
             master=frame,
             length=300,
-            # mode='indeterminate',
             bootstyle="success"
         )
         self.progressbar.pack_forget()
-        # self.progressbar.pack(side=LEFT)
 
         self.label_porcent = ttk.Label(frame, text="0%")
         self.label_porcent.pack_forget()
-        # self.label_porcent.pack(side=LEFT)
 
         frame2 = ttk.Frame(self, height=20)
         frame2.pack(side=LEFT, padx=20, pady=(5, 15))
@@ -222,15 +222,12 @@ class MainForm(ttk.Frame):
         self.progressbar2 = ttk.Progressbar(
             master=frame2,
             length=300,
-            # mode='indeterminate',
             bootstyle="success"
         )
         self.progressbar2.pack_forget()
-        # self.progressbar2.pack(side=LEFT)
 
         self.label_porcent2 = ttk.Label(frame2, text="0%")
         self.label_porcent2.pack_forget()
-        # self.label_porcent2.pack(side=LEFT)
 
     def load_video(self, file_path):
         if file_path:
@@ -364,7 +361,9 @@ class MainForm(ttk.Frame):
                 self.enviar = True
                 self.change_button_action_state(False)
                 self.show_progressbar(True)
-                self.show_progressbar(True, 2)
+
+                if self.configuration["habilitar_servidor2"] == 1:
+                    self.show_progressbar(True, 2)
 
                 t = threading.Thread(daemon=True, target=self.background_worker)
                 t.start()
@@ -375,10 +374,13 @@ class MainForm(ttk.Frame):
     def background_worker(self):
         self.situacao_copia_servidor1 = False
         self.situacao_copia_servidor2 = False
+        self.timeout_copy = False
+        self.timeout_ack = False
 
         self.change_form_action_state(False)
 
         try:
+            self.stop_watch = StopWatch()
             self.video.stop()
 
             codigo_material = MyRandom.gerar_codigo()
@@ -419,16 +421,22 @@ class MainForm(ttk.Frame):
             self.change_button_action_state(True)
 
             if self.enviar:
-                self.exibir_messagebox_concluido(self.result_destino1, self.result_destino2)
-                self.clean_fields()
-                self.label_thumbnail.place_forget()
-                self.video.place_forget()
+                if self.timeout_copy:
+                    raise Exception(f"Tempo de espera excedido para realizar a copia do arquivo.")
+                elif self.timeout_ack:
+                    raise Exception(f"Tempo de espera excedido para receber o arquivo de checagem.")
+                else:
+                    self.exibir_messagebox_concluido(self.result_destino1, self.result_destino2)
+                    self.clean_fields()
+                    self.label_thumbnail.place_forget()
+                    self.video.place_forget()
             else:
                 self.excluir_arquivos_servidores()
                 LogService.save_warning(f"Transferência cancelada pelo usuário.")
                 messagebox.showwarning(title="Atenção", message="Transferência cancelada pelo usuário.")
         except Exception as ex:
-            self.excluir_arquivos_servidores()
+            if not self.timeout_copy and not self.timeout_ack:
+                self.excluir_arquivos_servidores()
             self.show_progressbar(False)
             self.show_progressbar(False, 2)
             self.set_progressbar_determinate(True)
@@ -443,20 +451,27 @@ class MainForm(ttk.Frame):
             self.change_form_action_state(True)
 
     def checar_ack_servidor_2(self):
-        if self.configuration["habilitar_servidor2"] == 1 and self.situacao_copia_servidor2:
-            self.result_destino2 = self.checar_ack(self.configuration["servidor2"], self.titulo.get(), 2)
-        else:
-            self.result_destino2 = False
+        if self.configuration["habilitar_servidor2"] == 1:
+            try:
+                if self.situacao_copia_servidor2:
+                    self.result_destino2 = self.checar_ack(self.configuration["servidor2"], self.titulo.get(), 2)
+                else:
+                    self.result_destino2 = False
+            except:
+                self.result_destino2 = False
 
     def checar_ack_servidor_1(self):
-        if self.situacao_copia_servidor1:
-            self.result_destino1 = self.checar_ack(self.configuration["servidor"], self.titulo.get())
-        else:
+        try:
+            if self.situacao_copia_servidor1:
+                self.result_destino1 = self.checar_ack(self.configuration["servidor"], self.titulo.get())
+            else:
+                self.result_destino1 = False
+        except:
             self.result_destino1 = False
 
     def copiar_servidor_2(self, destino, titulo, arquivo, server, codigo_material):
-        print("copia_servidor_2")
         if self.configuration["habilitar_servidor2"] == 1:
+            print("Copia servidor 2")
             try:
                 self.copiar_arquivo_e_gerar_xml(destino, titulo, arquivo, server, codigo_material, 2)
                 self.situacao_copia_servidor2 = True
@@ -464,7 +479,7 @@ class MainForm(ttk.Frame):
                 self.situacao_copia_servidor2 = False
 
     def copiar_servidor_1(self, destino, titulo, arquivo, server, codigo_material):
-        print("copia_servidor_1")
+        print("Copia servidor 1")
         try:
             self.copiar_arquivo_e_gerar_xml(destino, titulo, arquivo, server, codigo_material)
             self.situacao_copia_servidor1 = True
@@ -540,7 +555,10 @@ class MainForm(ttk.Frame):
                 else:
                     self.set_progressbar_determinate(False, 2)
                     self.label_porcent2["text"] = "Cancelando copia para Servidor 2"
+                break
 
+            if not self.stop_watch.check(self.configuration["timeout_ack"]):
+                self.timeout_copy = True
                 break
 
             buf = fsrc.read(length)
@@ -582,7 +600,6 @@ class MainForm(ttk.Frame):
             self.label_porcent2["text"] = "Aguardando arquivo ACK para o Servidor 2"
 
         arquivo = os.path.join(caminho, f"{nome_arquivo}.ack")
-        stop_watch = StopWatch()
 
         while True:
             if not self.enviar:
@@ -594,8 +611,9 @@ class MainForm(ttk.Frame):
                     self.label_porcent2["text"] = "Cancelando checagem ACK Servidor 2"
                 return False
 
-            if not stop_watch.check(self.configuration["timeout_ack"]):
-                raise Exception(f"Tempo de espera excedido para receber o arquivo de checagem")
+            if not self.stop_watch.check(self.configuration["timeout_ack"]):
+                self.timeout_ack = True
+                return False
 
             if os.path.exists(arquivo):
                 while True:
@@ -614,15 +632,17 @@ class MainForm(ttk.Frame):
                         os.remove(arquivo)
                         break
                     except Exception:
-                        if stop_watch.check(self.configuration["timeout_ack"]):
+                        if self.stop_watch.check(self.configuration["timeout_ack"]):
                             continue
                         else:
                             if server == 1:
                                 self.set_progressbar_determinate(False)
-                                self.label_porcent["text"] = "Falha ao receber excluir arquivo Servidor 1"
+                                self.label_porcent["text"] = "Falha ao receber arquivo ACK Servidor 1"
                             else:
                                 self.set_progressbar_determinate(False, 2)
-                                self.label_porcent2["text"] = "Falha ao receber arquivo Servidor 2"
+                                self.label_porcent2["text"] = "Falha ao receber arquivo ACK Servidor 2"
+
+                            self.timeout_ack = True
                             return False
 
                 if result[0] == "0":
