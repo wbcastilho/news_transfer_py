@@ -74,8 +74,6 @@ class MainForm(ttk.Frame):
         self.init_combobox()
         self.associate_icons()
         self.create_buttonbar()
-        # self.create_enviar_frame()
-        # self.create_preview_frame()
         self.create_labels_frame()
         self.create_progressbar_frame()
 

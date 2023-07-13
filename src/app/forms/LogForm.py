@@ -6,7 +6,7 @@ from src.data.repository.LogRepository import LogRepository
 class LogsForm(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
-        self.pack(padx=10, pady=10)
+        self.pack(fill=BOTH, expand=YES, padx=10, pady=10)
         self.master = master
 
         self.treeview = None
