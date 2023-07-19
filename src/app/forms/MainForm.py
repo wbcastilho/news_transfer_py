@@ -493,9 +493,10 @@ class MainForm(ttk.Frame):
                                 False,
                                 server
                                 )
-        self.update_label_progressbar(False, f"Gerando arquivo xml {server_name}", server)
-        print("Gerar xml " + str(server))
-        self.gerar_xml(destino, titulo, arquivo, codigo_material)
+        if not self.timeout_copy:
+            self.update_label_progressbar(False, f"Gerando arquivo xml {server_name}", server)
+            print("Gerar xml " + str(server))
+            self.gerar_xml(destino, titulo, arquivo, codigo_material)
 
     def copy_with_callback(self, src, dest, server_name, callback=None, follow_symlinks=True, server=1):
         try:
