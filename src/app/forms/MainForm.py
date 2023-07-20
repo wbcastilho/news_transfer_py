@@ -435,7 +435,7 @@ class MainForm(ttk.Frame):
                 LogService.save_warning(f"Transferência cancelada pelo usuário.")
                 messagebox.showwarning(title="Atenção", message="Transferência cancelada pelo usuário.")
         except Exception as ex:
-            if not self.timeout_copy and not self.timeout_ack:
+            if not self.timeout_copy:
                 self.excluir_arquivos_servidores()
             self.show_progressbar(False)
             self.show_progressbar(False, 2)
@@ -500,12 +500,11 @@ class MainForm(ttk.Frame):
             self.update_label_progressbar(False, f"Gerando arquivo xml {server_name}", server)
             print("Gerar xml " + str(server))
             self.gerar_xml(destino, titulo, arquivo, codigo_material)
-        except (FileNotFoundError, SpecialFileError, TimeoutCopyError, ValueError) as ex:
+        except TimeoutCopyError as ex:
             self.timeout_copy = True
-            print(f'Teste {titulo}')
             MyFile.excluir_arquivo_mxf(destino, titulo)
             raise Exception(ex)
-        except (CreateXMLError, Exception) as ex:
+        except (CreateXMLError, Exception, FileNotFoundError, SpecialFileError, ValueError) as ex:
             MyFile.excluir_arquivo_mxf(destino, titulo)
             MyFile.excluir_arquivo_xml(destino, titulo)
             raise Exception(ex)
