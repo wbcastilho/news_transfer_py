@@ -1,0 +1,2 @@
+class TimeoutCopyError(Exception):
+    pass

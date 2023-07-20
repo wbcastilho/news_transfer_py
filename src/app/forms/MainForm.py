@@ -24,6 +24,8 @@ from src.business.adapters.MyFile import MyFile
 from src.business.services.LogService import LogService
 from src.data.repository.LogRepository import LogRepository
 from src.business.exceptions.SameFileError import SameFileError
+from src.business.exceptions.CreateXMLError import CreateXMLError
+from src.business.exceptions.TimeoutError import TimeoutCopyError
 from src.business.exceptions.SpecialFileError import SpecialFileError
 
 
@@ -485,64 +487,71 @@ class MainForm(ttk.Frame):
             self.situacao_copia_servidor1 = False
 
     def copiar_arquivo_e_gerar_xml(self, destino, titulo, arquivo, server_name, codigo_material, server=1):
-        self.update_label_progressbar(True, "0%", server)
-        self.copy_with_callback(arquivo,
-                                f'{destino}\\{titulo}.mxf',
-                                server_name,
-                                None,
-                                False,
-                                server
-                                )
-        if not self.timeout_copy:
+        try:
+            self.update_label_progressbar(True, "0%", server)
+            self.copy_with_callback(arquivo,
+                                    f'{destino}\\{titulo}.mxf',
+                                    server_name,
+                                    None,
+                                    False,
+                                    server
+                                    )
+
             self.update_label_progressbar(False, f"Gerando arquivo xml {server_name}", server)
             print("Gerar xml " + str(server))
             self.gerar_xml(destino, titulo, arquivo, codigo_material)
+        except (FileNotFoundError, SpecialFileError, TimeoutCopyError, ValueError) as ex:
+            self.timeout_copy = True
+            print(f'Teste {titulo}')
+            MyFile.excluir_arquivo_mxf(destino, titulo)
+            raise Exception(ex)
+        except (CreateXMLError, Exception) as ex:
+            MyFile.excluir_arquivo_mxf(destino, titulo)
+            MyFile.excluir_arquivo_xml(destino, titulo)
+            raise Exception(ex)
 
     def copy_with_callback(self, src, dest, server_name, callback=None, follow_symlinks=True, server=1):
-        try:
-            buffer_size = 4096 * 1024
-            srcfile = pathlib.Path(src)
-            destpath = pathlib.Path(dest)
+        buffer_size = 4096 * 1024
+        srcfile = pathlib.Path(src)
+        destpath = pathlib.Path(dest)
 
-            if not srcfile.is_file():
-                raise FileNotFoundError(f"Arquivo de origem `{src}` não existe")
+        if not srcfile.is_file():
+            raise FileNotFoundError(f"Arquivo de origem `{src}` não existe")
 
-            destfile = destpath / srcfile.name if destpath.is_dir() else destpath
+        destfile = destpath / srcfile.name if destpath.is_dir() else destpath
 
-            if destfile.exists() and srcfile.samefile(destfile):
-                raise SameFileError(
-                    f"Arquivo de origem `{src}` e arquivo de destino `{dest}` são iguais."
-                )
+        if destfile.exists() and srcfile.samefile(destfile):
+            raise SameFileError(
+                f"Arquivo de origem `{src}` e arquivo de destino `{dest}` são iguais."
+            )
 
-            # check for special files, lifted from shutil.copy source
-            for fname in [srcfile, destfile]:
-                try:
-                    st = os.stat(str(fname))
-                except OSError:
-                    # File most likely does not exist
-                    pass
-                else:
-                    if shutil.stat.S_ISFIFO(st.st_mode):
-                        raise SpecialFileError(f"`{fname}` is a named pipe")
-
-            if callback is not None and not callable(callback):
-                raise ValueError("callback is not callable")
-
-            if not follow_symlinks and srcfile.is_symlink():
-                if destfile.exists():
-                    os.unlink(destfile)
-                os.symlink(os.readlink(str(srcfile)), str(destfile))
+        # check for special files, lifted from shutil.copy source
+        for fname in [srcfile, destfile]:
+            try:
+                st = os.stat(str(fname))
+            except OSError:
+                # File most likely does not exist
+                pass
             else:
-                size = os.stat(src).st_size
-                with open(srcfile, "rb") as fsrc:
-                    with open(destfile, "wb") as fdest:
-                        self.copy_file(
-                            fsrc, fdest, server_name, callback, size, buffer_size, server
-                        )
-            shutil.copymode(str(srcfile), str(destfile))
-            return str(destfile)
-        except Exception as ex:
-            raise Exception(f"Falha ao copiar arquivo. {ex}")
+                if shutil.stat.S_ISFIFO(st.st_mode):
+                    raise SpecialFileError(f"`{fname}` is a named pipe")
+
+        if callback is not None and not callable(callback):
+            raise ValueError("callback is not callable")
+
+        if not follow_symlinks and srcfile.is_symlink():
+            if destfile.exists():
+                os.unlink(destfile)
+            os.symlink(os.readlink(str(srcfile)), str(destfile))
+        else:
+            size = os.stat(src).st_size
+            with open(srcfile, "rb") as fsrc:
+                with open(destfile, "wb") as fdest:
+                    self.copy_file(
+                        fsrc, fdest, server_name, callback, size, buffer_size, server
+                    )
+        shutil.copymode(str(srcfile), str(destfile))
+        return str(destfile)
 
     def copy_file(self, fsrc, fdest, server_name, callback, total, length, server=1):
         copied = 0
@@ -557,8 +566,9 @@ class MainForm(ttk.Frame):
                 break
 
             if not self.stop_watch.check(self.configuration["timeout_ack"]):
-                self.timeout_copy = True
-                break
+                # self.timeout_copy = True
+                # break
+                raise TimeoutCopyError(f"Tempo de espera excedido para realizar a copia do arquivo.")
 
             buf = fsrc.read(length)
             if not buf:
@@ -589,7 +599,7 @@ class MainForm(ttk.Frame):
             }
             VideoXML.create(caminho=servidor, arquivo=f'{titulo}.xml', dto=dto)
         except Exception as ex:
-            raise Exception(f"Falha ao gerar arquivo xml. {ex}")
+            raise CreateXMLError(f"Falha ao gerar arquivo xml. {ex}")
 
     def checar_ack(self, caminho, nome_arquivo, server=1) -> bool:
         print("checar_ack " + str(server))

@@ -1,0 +1,2 @@
+class CreateXMLError(Exception):
+    pass
