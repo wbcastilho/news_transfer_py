@@ -565,8 +565,6 @@ class MainForm(ttk.Frame):
                 break
 
             if not self.stop_watch.check(self.configuration["timeout_ack"]):
-                # self.timeout_copy = True
-                # break
                 raise TimeoutCopyError(f"Tempo de espera excedido para realizar a copia do arquivo.")
 
             buf = fsrc.read(length)
