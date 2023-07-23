@@ -30,6 +30,7 @@ class MyFile:
 
     @staticmethod
     def extensao_arquivo(arquivo):
+        print(arquivo)
         extensao = pathlib.Path(arquivo).suffix
         return extensao
 

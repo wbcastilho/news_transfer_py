@@ -142,13 +142,17 @@ class MainForm(ttk.Frame):
         frame.pack(fill="x", padx=20, pady=15)
 
         label = ttk.Label(frame, text="Arquivo", font=("Helvetica", 10))
-        label.grid(row=0, column=0, padx=1, sticky=ttk.E)
-        self.entry_arquivo = ttk.Entry(frame, width=70, textvariable=self.arquivo, state="disabled",
-                                       font=("Helvetica", 10))
+        label.grid(row=0, column=0, padx=1, sticky=ttk.NE)
+        # self.entry_arquivo = ttk.Entry(frame, width=70, textvariable=self.arquivo, state="disabled",
+        #                                font=("Helvetica", 10))
+        # self.entry_arquivo.grid(row=0, column=1, padx=2, sticky=ttk.W)
+
+        self.entry_arquivo = ttk1.Text(frame, width=70, height=3, wrap=WORD, state="disabled", font=("Helvetica", 10))
         self.entry_arquivo.grid(row=0, column=1, padx=2, sticky=ttk.W)
+
         self.button_browse = ttk.Button(frame, text="Selecionar Arquivo", bootstyle=(INFO, OUTLINE),
                                         command=self.on_browse, style='primary.Outline.TButton')
-        self.button_browse.grid(row=0, column=2, padx=2)
+        self.button_browse.grid(row=0, column=2, padx=2, sticky=ttk.NE)
 
         label = ttk.Label(frame, text="Retranca / Título", font=("Helvetica", 10))
         label.grid(row=1, column=0, padx=1, pady=(20, 0), sticky=ttk.E)
@@ -239,7 +243,6 @@ class MainForm(ttk.Frame):
 
     def play(self):
         if self.arquivo.get() != '':
-
             if self.button_play_pause['image'] == ('play-icon',):
                 self.button_play_pause['image'] = 'pause-icon'
                 self.progress_slider.configure(state="normal")
@@ -353,7 +356,11 @@ class MainForm(ttk.Frame):
         filename = filedialog.askopenfilename(title='Selecionar Arquivo', initialdir='c:/', filetypes=filetypes)
         if filename:
             self.arquivo.set(filename)
-            self.entry_arquivo.configure(bootstyle="default")
+            self.entry_arquivo.config(state=NORMAL)
+            self.entry_arquivo.delete("1.0", END)
+            self.entry_arquivo.insert(END, filename)
+            self.entry_arquivo.config(state=DISABLED)
+            # self.entry_arquivo.configure(bootstyle="default")
             self.load_video(filename)
 
     def on_action(self) -> None:
@@ -388,12 +395,16 @@ class MainForm(ttk.Frame):
 
             thread1 = threading.Thread(daemon=True,
                                        target=self.copiar_servidor_2,
-                                       args=(self.configuration["servidor2"], self.titulo.get(), self.arquivo.get(),
-                                             "Servidor 2", codigo_material))
+                                       args=(self.configuration["servidor2"],
+                                             self.titulo.get(),
+                                             self.arquivo.get(),
+                                             "Servidor 2",
+                                             codigo_material))
 
             thread2 = threading.Thread(daemon=True,
                                        target=self.copiar_servidor_1,
-                                       args=(self.configuration["servidor"], self.titulo.get(), self.arquivo.get(),
+                                       args=(self.configuration["servidor"], self.titulo.get(),
+                                             self.arquivo.get(),
                                              "Servidor 1", codigo_material))
 
             # Inicia as threads 1 e 2
@@ -799,6 +810,11 @@ class MainForm(ttk.Frame):
 
     def clean_fields(self) -> None:
         self.arquivo.set("")
+
+        self.entry_arquivo.config(state=NORMAL)
+        self.entry_arquivo.delete("1.0", END)
+        self.entry_arquivo.config(state=DISABLED)
+
         self.titulo.set("")
         self.grupo.set("")
 
