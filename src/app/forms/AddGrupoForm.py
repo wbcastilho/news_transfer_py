@@ -1,8 +1,6 @@
 import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
-from tkinter import filedialog
 from tkinter import messagebox
-from src.business.adapters.MyJSON import MyJSON
+from ttkbootstrap.constants import *
 
 
 class AddGrupoForm(ttk.Frame):

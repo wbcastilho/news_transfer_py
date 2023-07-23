@@ -1,26 +1,27 @@
-import pathlib
-import shutil
-from tkinter import filedialog
-from tkinter import messagebox
-import tkinter as ttk1
-import ttkbootstrap as ttk
-import tkVideoPlayer
-from ttkbootstrap.constants import *
-from pathlib import Path
-import threading
 import os
 import cv2
+import pathlib
+import shutil
+import threading
+import tkVideoPlayer
+import tkinter as ttk1
+from pathlib import Path
+import ttkbootstrap as ttk
 from PIL import Image, ImageTk
+from tkinter import filedialog
+from tkinter import messagebox
+from ttkbootstrap.constants import *
 
 from src.app.forms.LogForm import LogsForm
-from src.app.forms.SettingsForm import SettingsForm
+from src.business.utils.Helper import Helper
+from src.business.adapters.AckXML import AckXML
 from src.business.adapters.MyJSON import MyJSON
+from src.business.adapters.MyFile import MyFile
+from src.business.utils.StopWatch import StopWatch
+from src.app.forms.SettingsForm import SettingsForm
 from src.business.adapters.VideoXML import VideoXML
 from src.business.adapters.MyRandom import MyRandom
-from src.business.adapters.AckXML import AckXML
 from src.business.utils.ConvertVideo import ConvertVideo
-from src.business.utils.StopWatch import StopWatch
-from src.business.adapters.MyFile import MyFile
 from src.business.services.LogService import LogService
 from src.data.repository.LogRepository import LogRepository
 from src.business.exceptions.SameFileError import SameFileError
@@ -821,7 +822,14 @@ class MainForm(ttk.Frame):
         if self.titulo.get() is None or self.titulo.get() == "":
             self.entry_titulo.configure(bootstyle="danger")
             self.entry_titulo.focus()
-            messagebox.showwarning(title="Atenção", message="O campo título deve ser preenchido.")
+            messagebox.showwarning(title="Atenção", message="O campo Retranca/Título deve ser preenchido.")
+            return False
+        if Helper.possui_caractere_especial(self.titulo.get()):
+            self.entry_titulo.configure(bootstyle="danger")
+            self.entry_titulo.focus()
+            messagebox.showwarning(title="Atenção", message="Não são permitidos acentos e caracteres especiais no "
+                                                            "campo Retranca/Título. Só são permitidos letras, números, "
+                                                            "underline e hífen.")
             return False
         if self.grupo.get() is None or self.grupo.get() == "":
             self.combobox_grupo.configure(bootstyle="danger")

@@ -1,7 +1,8 @@
 import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
 from tkinter import filedialog
 from tkinter import messagebox
+from ttkbootstrap.constants import *
+from src.business.utils.Helper import Helper
 from src.app.forms.AddGrupoForm import AddGrupoForm
 from src.business.adapters.MyJSON import MyJSON
 
@@ -242,6 +243,13 @@ class SettingsForm(ttk.Frame):
             self.entry_usuario.configure(bootstyle="danger")
             self.entry_usuario.focus()
             messagebox.showwarning(title="Atenção", message="O campo Usuário deve ser preenchido.")
+            return False
+        if Helper.possui_caractere_especial(self.local_configuration["usuario"].get()):
+            self.entry_usuario.configure(bootstyle="danger")
+            self.entry_usuario.focus()
+            messagebox.showwarning(title="Atenção", message="Não são permitidos acentos e caracteres especiais no "
+                                                            "campo Usuário. Só são permitidos letras, números, "
+                                                            "underline e hífen.")
             return False
         if len(self.treeview.get_children()) == 0:
             self.treeview.configure(bootstyle="danger")
