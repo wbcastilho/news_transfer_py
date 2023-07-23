@@ -177,7 +177,7 @@ class MainForm(ttk.Frame):
         label_frame.pack(side=RIGHT, padx=20, pady=(5, 15), anchor=ttk.N)
 
         frame = ttk.Frame(label_frame)
-        frame.pack(fill="x", padx=20, pady=15)
+        frame.pack(fill="x", padx=20, pady=35)
 
         video_frame = ttk.Frame(frame, bootstyle="dark", width=275, height=140)
         video_frame.grid(row=0)
@@ -205,7 +205,6 @@ class MainForm(ttk.Frame):
         self.progress_slider.configure(state="disabled")
 
         self.label_thumbnail = ttk.Label(frame, bootstyle="info")
-        # self.label_thumbnail.place(x=0, y=0)
 
     def create_progressbar_frame(self):
         frame = ttk.Frame(self, height=20)
@@ -851,6 +850,11 @@ class MainForm(ttk.Frame):
             self.combobox_grupo.configure(bootstyle="danger")
             self.combobox_grupo.focus()
             messagebox.showwarning(title="Atenção", message="O campo Grupo dever ser selecionado.")
+            return False
+        if self.grupo.get() not in self.configuration["grupos"]:
+            self.combobox_grupo.configure(bootstyle="danger")
+            self.combobox_grupo.focus()
+            messagebox.showwarning(title="Atenção", message="O valor selecionado é inválido para o campo Grupo.")
             return False
         return True
 
