@@ -147,7 +147,8 @@ class MainForm(ttk.Frame):
         #                                font=("Helvetica", 10))
         # self.entry_arquivo.grid(row=0, column=1, padx=2, sticky=ttk.W)
 
-        self.entry_arquivo = ttk1.Text(frame, width=70, height=3, wrap=WORD, state="disabled", font=("Helvetica", 10))
+        self.entry_arquivo = ttk1.Text(frame, width=70, height=3, wrap=WORD, state="disabled", font=("Helvetica", 10),
+                                       foreground="red")
         self.entry_arquivo.grid(row=0, column=1, padx=2, sticky=ttk.W)
 
         self.button_browse = ttk.Button(frame, text="Selecionar Arquivo", bootstyle=(INFO, OUTLINE),
@@ -158,6 +159,9 @@ class MainForm(ttk.Frame):
         label.grid(row=1, column=0, padx=1, pady=(20, 0), sticky=ttk.E)
         self.entry_titulo = ttk.Entry(frame, width=50, textvariable=self.titulo, font=("Helvetica", 10))
         self.entry_titulo.grid(row=1, column=1, padx=2, pady=(20, 0), sticky=ttk.W)
+
+        # Evento ao perder o focu - retira os espaços do início e do fim do titulo
+        self.entry_titulo.bind("<FocusOut>", lambda event: self.titulo.set(self.titulo.get().strip()))
         self.titulo.trace('w', self.transform_uppercase)
 
         label = ttk.Label(frame, text="Grupo", font=("Helvetica", 10))
@@ -352,14 +356,30 @@ class MainForm(ttk.Frame):
         filetypes = (
             ('MXF Files', '*.mxf'),
         )
+
         filename = filedialog.askopenfilename(title='Selecionar Arquivo', initialdir='c:/', filetypes=filetypes)
+
         if filename:
             self.arquivo.set(filename)
+
+            # Habilita a edição de texto
             self.entry_arquivo.config(state=NORMAL)
+
+            # Limpa o texto
             self.entry_arquivo.delete("1.0", END)
+
+            # Insere o texto
             self.entry_arquivo.insert(END, filename)
+
+            # Intervalo do texto que deseja alterar a cor
+            self.entry_arquivo.tag_add("color_tag", "1.0", END)
+
+            # Altera a cor do texto
+            self.entry_arquivo.tag_config("color_tag", foreground="#BBB")
+
+            # Desabilita a edição de texto
             self.entry_arquivo.config(state=DISABLED)
-            # self.entry_arquivo.configure(bootstyle="default")
+
             self.load_video(filename)
 
     def on_action(self) -> None:
