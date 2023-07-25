@@ -177,7 +177,7 @@ class MainForm(ttk.Frame):
         self.button_action.grid(row=3, column=0, columnspan=3, padx=0, pady=(20, 0))
 
     def create_preview_frame(self, parent):
-        label_frame = ttk.Labelframe(parent, text='Preview')
+        label_frame = ttk.Labelframe(parent, text='Preview', height=200)
         label_frame.pack(side=RIGHT, padx=20, pady=(5, 15), anchor=ttk.N)
 
         frame = ttk.Frame(label_frame)
@@ -623,7 +623,7 @@ class MainForm(ttk.Frame):
                 'operador': self.configuration["usuario"],
                 'markIn': '000',
                 'markOut': ConvertVideo.get_duration(arquivo),
-                'remover': '0'
+                'remover': '1'
             }
             VideoXML.create(caminho=servidor, arquivo=f'{titulo}.xml', dto=dto)
         except Exception as ex:
@@ -847,7 +847,7 @@ class MainForm(ttk.Frame):
             return False
         if self.arquivo.get() is None or self.arquivo.get() == "":
             self.entry_arquivo.configure(bootstyle="danger")
-            messagebox.showwarning(title="Atenção", message="O campo arquivo deve ser selecionado.")
+            messagebox.showwarning(title="Atenção", message="O campo Arquivo deve ser selecionado.")
             return False
         if MyFile.extensao_arquivo(self.arquivo.get()) != ".MXF" \
                 and MyFile.extensao_arquivo(self.arquivo.get()) != ".mxf":

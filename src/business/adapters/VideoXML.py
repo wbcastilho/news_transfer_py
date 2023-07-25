@@ -7,8 +7,8 @@ class VideoXML:
     def create(caminho: str, arquivo: str, dto: dict) -> None:
         root = ET.Element("video")
 
-        arquivo_element = ET.SubElement(root, "codigo")
-        arquivo_element.text = dto['codigo']
+        codigo_element = ET.SubElement(root, "codigo")
+        codigo_element.text = dto['codigo']
 
         arquivo_element = ET.SubElement(root, "arquivo")
         arquivo_element.text = dto['arquivo']
