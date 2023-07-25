@@ -632,9 +632,9 @@ class MainForm(ttk.Frame):
     def checar_ack(self, caminho, nome_arquivo, server=1) -> bool:
         print("checar_ack " + str(server))
         if server == 1:
-            self.label_porcent["text"] = "Aguardando arquivo ACK para o Servidor 1"
+            self.label_porcent["text"] = "Aguardando arquivo ACK do Servidor 1"
         else:
-            self.label_porcent2["text"] = "Aguardando arquivo ACK para o Servidor 2"
+            self.label_porcent2["text"] = "Aguardando arquivo ACK do Servidor 2"
 
         arquivo = os.path.join(caminho, f"{nome_arquivo}.ack")
 
