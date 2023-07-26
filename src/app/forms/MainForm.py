@@ -815,7 +815,7 @@ class MainForm(ttk.Frame):
             self.button_action['text'] = 'Enviar ao servidor'
             self.button_action.configure(bootstyle="primary", style="primary.TButton")
         else:
-            self.button_action['text'] = 'Parar transferência'
+            self.button_action['text'] = 'Cancelar transferência'
             self.button_action.configure(bootstyle="danger", style="danger.TButton")
 
     def change_form_action_state(self, value: bool) -> None:
