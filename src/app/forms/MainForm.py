@@ -40,7 +40,8 @@ class MainForm(ttk.Frame):
             'habilitar_servidor2': 0,
             'timeout_ack': 15,
             'usuario': "",
-            'grupos': []
+            'grupos': [],
+            'remover': 0
         }
         self.photo_images = []
         self.enviar = False
@@ -623,7 +624,7 @@ class MainForm(ttk.Frame):
                 'operador': self.configuration["usuario"],
                 'markIn': '000',
                 'markOut': ConvertVideo.get_duration(arquivo),
-                'remover': '1'
+                'remover': str(self.configuration["remover"])
             }
             VideoXML.create(caminho=servidor, arquivo=f'{titulo}.xml', dto=dto)
         except Exception as ex:

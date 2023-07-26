@@ -18,7 +18,8 @@ class SettingsForm(ttk.Frame):
             'habilitar_servidor2': ttk.IntVar(),
             'servidor2': ttk.StringVar(),
             'timeout_ack': ttk.IntVar(),
-            'usuario': ttk.StringVar()
+            'usuario': ttk.StringVar(),
+            'remover': ttk.IntVar()
         }
         self.button_save = None
         self.button_cancel = None
@@ -96,7 +97,7 @@ class SettingsForm(ttk.Frame):
 
         self.entry_usuario = ttk.Entry(frame,
                                        textvariable=self.local_configuration['usuario'],
-                                       width=50,
+                                       width=40,
                                        font=('Helvetica', 10)
                                        )
         self.entry_usuario.grid(row=0, column=1, padx=2, sticky=ttk.W, pady=5)
@@ -112,7 +113,7 @@ class SettingsForm(ttk.Frame):
                                      show="tree"
                                      )
 
-        self.treeview.column('grupo', stretch=False)
+        self.treeview.column('grupo', stretch=False, width=170)
         self.treeview.grid(row=1, column=1, padx=2, sticky=ttk.W, pady=5)
 
         frame_button = ttk.Frame(frame)
@@ -135,6 +136,12 @@ class SettingsForm(ttk.Frame):
         self.spinbox_timeout.grid(row=2, column=1, padx=2, pady=5, sticky=ttk.W)
         self.spinbox_timeout.bind('<Key>', lambda event: self.spinbox_timeout.configure(bootstyle="default"))
         self.spinbox_timeout.bind('<FocusIn>', lambda event: self.spinbox_timeout.configure(bootstyle="default"))
+
+        label = ttk.Label(frame, text="Remover Arquivos", font=('Helvetica', 10))
+        label.grid(row=3, column=0, padx=1, sticky=ttk.E, pady=5)
+
+        chk_remover = ttk.Checkbutton(frame, onvalue=1, offvalue=0, variable=self.local_configuration['remover'])
+        chk_remover.grid(row=3, column=1, padx=1, sticky=ttk.W, pady=5)
 
     def create_buttons(self) -> None:
         frame = ttk.Frame(self)
@@ -202,6 +209,7 @@ class SettingsForm(ttk.Frame):
         self.local_configuration["habilitar_servidor2"].set(self.parent.configuration["habilitar_servidor2"])
         self.local_configuration["timeout_ack"].set(self.parent.configuration["timeout_ack"])
         self.local_configuration["usuario"].set(self.parent.configuration["usuario"])
+        self.local_configuration["remover"].set(self.parent.configuration["remover"])
 
         i = 0
         for item in self.parent.configuration["grupos"]:
@@ -214,6 +222,7 @@ class SettingsForm(ttk.Frame):
         self.parent.configuration["habilitar_servidor2"] = self.local_configuration["habilitar_servidor2"].get()
         self.parent.configuration["timeout_ack"] = self.local_configuration["timeout_ack"].get()
         self.parent.configuration["usuario"] = self.local_configuration["usuario"].get()
+        self.parent.configuration["remover"] = self.local_configuration["remover"].get()
 
         self.parent.configuration["grupos"].clear()
 
