@@ -9,7 +9,7 @@ class MyFile:
             if os.path.exists(arquivo):
                 os.remove(arquivo)
         except Exception as ex:
-            raise Exception(f"Falha ao apagar arquivo. {ex}")
+            pass
 
     @classmethod
     def _excluir_arquivo(cls, caminho, nome_arquivo, extensao):
