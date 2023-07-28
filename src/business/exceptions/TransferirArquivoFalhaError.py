@@ -1,0 +1,2 @@
+class TransferirArquivoFalhaError(Exception):
+    pass

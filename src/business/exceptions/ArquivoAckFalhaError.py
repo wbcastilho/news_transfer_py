@@ -1,0 +1,2 @@
+class ArquivoAckFalhaError(Exception):
+    pass

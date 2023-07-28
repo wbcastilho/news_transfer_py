@@ -1,0 +1,2 @@
+class CopiarArquivoError(Exception):
+    pass

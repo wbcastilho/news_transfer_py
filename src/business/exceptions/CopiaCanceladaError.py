@@ -1,0 +1,2 @@
+class CopiaCanceladaError(Exception):
+    pass

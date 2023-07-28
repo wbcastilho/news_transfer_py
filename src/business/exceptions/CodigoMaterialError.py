@@ -1,0 +1,2 @@
+class CodigoMaterialError(Exception):
+    pass

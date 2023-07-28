@@ -1,0 +1,2 @@
+class ArquivoVideoInvalidoError(Exception):
+    pass

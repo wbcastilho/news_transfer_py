@@ -1,0 +1,2 @@
+class ArquivoVideoNotFoundError(Exception):
+    pass

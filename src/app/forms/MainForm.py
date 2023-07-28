@@ -26,9 +26,17 @@ from src.business.services.LogService import LogService
 from src.data.repository.LogRepository import LogRepository
 from src.business.exceptions.SameFileError import SameFileError
 from src.business.exceptions.CreateXMLError import CreateXMLError
-from src.business.exceptions.TimeoutError import TimeoutCopyError
+from src.business.exceptions.TimeoutCopyError import TimeoutCopyError
+from src.business.exceptions.TimeoutAckError import TimeoutAckError
 from src.business.exceptions.SpecialFileError import SpecialFileError
-
+from src.business.exceptions.ArquivoAckCanceladoError import ArquivoAckCanceladoError
+from src.business.exceptions.ArquivoAckFalhaError import ArquivoAckFalhaError
+from src.business.exceptions.ArquivoVideoInvalidoError import ArquivoVideoInvalidoError
+from src.business.exceptions.ArquivoVideoNotFoundError import ArquivoVideoNotFoundError
+from src.business.exceptions.CodigoMaterialError import CodigoMaterialError
+from src.business.exceptions.CopiaCanceladaError import CopiaCanceladaError
+from src.business.exceptions.TransferirArquivoFalhaError import TransferirArquivoFalhaError
+from src.business.exceptions.CopiarArquivoError import CopiarArquivoError
 
 class MainForm(ttk.Frame):
     def __init__(self, *args, **kwargs):
@@ -43,6 +51,23 @@ class MainForm(ttk.Frame):
             'grupos': [],
             'remover': 0
         }
+
+        # Constantes
+        self.TRANSFERIDO_COM_SUCESSO = 0
+        self.MATERIAL_JA_EXISTENTE = 4
+        self.ARQUIVO_VIDEO_NAO_ENCONTRADO = 8
+        self.ARQUIVO_VIDEO_INVALIDO = 9
+        self.FALHA_TRANSFERIR_ARQUIVO = 10
+        self.FALHA_AO_COPIAR_ARQUIVO = 100
+        self.COPIA_CANCELADA = 101
+        self.FALHA_AO_GERAR_XML = 102
+        self.TIMEOUT_COPY_ERROR = 103
+        self.ACK_RECEBIDO = 0
+        self.RECEPCAO_ACK_CANCELADO = 201
+        self.ACK_FALHA = 202
+        self.TIMEOUT_ACK_ERROR = 203
+        self.ERRO_DESCONHECIDO = 300
+
         self.photo_images = []
         self.enviar = False
         self.situacao_copia_servidor1 = False
@@ -400,10 +425,12 @@ class MainForm(ttk.Frame):
             self.change_button_action_state(True)
 
     def background_worker(self):
-        self.situacao_copia_servidor1 = False
-        self.situacao_copia_servidor2 = False
-        self.timeout_copy = False
-        self.timeout_ack = False
+        self.situacao_copia_servidor1 = self.FALHA_AO_COPIAR_ARQUIVO
+        self.situacao_copia_servidor2 = self.FALHA_AO_COPIAR_ARQUIVO
+        self.result_destino1 = self.FALHA_TRANSFERIR_ARQUIVO
+        self.result_destino2 = self.FALHA_TRANSFERIR_ARQUIVO
+        # self.timeout_copy = False
+        # self.timeout_ack = False
 
         self.change_form_action_state(False)
 
@@ -452,23 +479,26 @@ class MainForm(ttk.Frame):
             self.update_label_progressbar(True, "100%", 2)
             self.change_button_action_state(True)
 
-            if self.enviar:
-                if self.timeout_copy:
-                    raise Exception(f"Tempo de espera excedido para realizar a copia do arquivo.")
-                elif self.timeout_ack:
-                    raise Exception(f"Tempo de espera excedido para receber o arquivo de checagem.")
-                else:
-                    self.exibir_messagebox_concluido(self.result_destino1, self.result_destino2)
-                    self.clean_fields()
-                    self.label_thumbnail.place_forget()
-                    self.video.place_forget()
-            else:
-                self.excluir_arquivos_servidores()
-                LogService.save_warning(f"Transferência cancelada pelo usuário.")
-                messagebox.showwarning(title="Atenção", message="Transferência cancelada pelo usuário.")
+            # if self.enviar:
+            # if self.timeout_copy:
+            #     raise Exception(f"Tempo de espera excedido para realizar a copia do arquivo.")
+            # elif self.timeout_ack:
+            #     raise Exception(f"Tempo de espera excedido para receber o arquivo de checagem.")
+            # else:
+
+            # self.exibir_messagebox_concluido(self.result_destino1, self.result_destino2)
+            self.exibir_messagebox_e_log_concluido(self.result_destino1, self.result_destino2)
+            self.clean_fields()
+            self.label_thumbnail.place_forget()
+            self.video.place_forget()
+
+            # else:
+            #     self.excluir_arquivos_servidores()
+            #     LogService.save_warning(f"Transferência cancelada pelo usuário.")
+            #     messagebox.showwarning(title="Atenção", message="Transferência cancelada pelo usuário.")
         except Exception as ex:
-            if not self.timeout_copy:
-                self.excluir_arquivos_servidores()
+            # if not self.timeout_copy:
+            #     self.excluir_arquivos_servidores()
             self.show_progressbar(False)
             self.show_progressbar(False, 2)
             self.set_progressbar_determinate(True)
@@ -484,62 +514,169 @@ class MainForm(ttk.Frame):
 
     def checar_ack_servidor_2(self):
         if self.configuration["habilitar_servidor2"] == 1:
+            self.result_destino2 = self.ERRO_DESCONHECIDO
+
             try:
-                if self.situacao_copia_servidor2:
-                    self.result_destino2 = self.checar_ack(self.configuration["servidor2"], self.titulo.get(), 2)
+                if self.situacao_copia_servidor2 == self.FALHA_AO_COPIAR_ARQUIVO \
+                        or self.situacao_copia_servidor2 == self.COPIA_CANCELADA\
+                        or self.situacao_copia_servidor2 == self.FALHA_AO_GERAR_XML\
+                        or self.situacao_copia_servidor2 == self.TIMEOUT_COPY_ERROR:
+                    self.result_destino2 = self.situacao_copia_servidor2
                 else:
-                    self.result_destino2 = False
-            except:
-                self.result_destino2 = False
+                    self.label_porcent2["text"] = "Aguardando arquivo ACK do Servidor 2"
+
+                    self.result_destino2 = self.checar_ack(self.configuration["servidor2"], self.titulo.get(), 2)
+
+                    if self.result_destino2 == self.ACK_RECEBIDO:
+                        self.progressbar2.pack_forget()
+                        self.label_porcent2["text"] = "Arquivo ACK do Servidor 2 recebido com sucesso"
+                    elif self.result_destino2 == self.ACK_FALHA:
+                        self.progressbar2.pack_forget()
+                        self.label_porcent2["text"] = "Erro desconhecido ao receber arquivo ACK Servidor 2"
+                        self.excluir_arquivos(self.configuration["servidor2"], self.titulo.get())
+            except ArquivoAckCanceladoError as ex:
+                self.set_progressbar_determinate(False, 2)
+                self.label_porcent2["text"] = "Cancelando checagem ACK no Servidor 2"
+                self.excluir_arquivos(self.configuration["servidor2"], self.titulo.get())
+                self.result_destino2 = self.RECEPCAO_ACK_CANCELADO
+            except TimeoutAckError as ex:
+                self.excluir_arquivos(self.configuration["servidor2"], self.titulo.get())
+                self.result_destino2 = self.TIMEOUT_ACK_ERROR
+            except ArquivoAckFalhaError as ex:
+                self.set_progressbar_determinate(False, 2)
+                self.label_porcent2["text"] = "Falha ao receber arquivo ACK no Servidor 2"
+                self.excluir_arquivos(self.configuration["servidor2"], self.titulo.get())
+                self.result_destino2 = self.ACK_FALHA
+            except CodigoMaterialError as ex:
+                self.set_progressbar_determinate(False)
+                self.label_porcent2["text"] = "Falha código material já existente no Servidor 2"
+                self.excluir_arquivos(self.configuration["servidor2"], self.titulo.get())
+                self.result_destino2 = self.MATERIAL_JA_EXISTENTE
+            except ArquivoVideoNotFoundError as ex:
+                self.set_progressbar_determinate(False)
+                self.label_porcent2["text"] = "Falha arquivo de vídeo não encontrado no Servidor 2"
+                self.excluir_arquivos(self.configuration["servidor2"], self.titulo.get())
+                self.result_destino2 = self.ARQUIVO_VIDEO_NAO_ENCONTRADO
+            except ArquivoVideoInvalidoError as ex:
+                self.set_progressbar_determinate(False)
+                self.label_porcent2["text"] = "Falha arquivo de vídeo inválido no Servidor 2"
+                self.excluir_arquivos(self.configuration["servidor2"], self.titulo.get())
+                self.result_destino2 = self.ARQUIVO_VIDEO_INVALIDO
+            except TransferirArquivoFalhaError as ex:
+                self.set_progressbar_determinate(False)
+                self.label_porcent2["text"] = "Falha ao transferir arquivo para o Servidor 2"
+                self.excluir_arquivos(self.configuration["servidor2"], self.titulo.get())
+                self.result_destino2 = self.FALHA_TRANSFERIR_ARQUIVO
 
     def checar_ack_servidor_1(self):
         try:
-            if self.situacao_copia_servidor1:
-                self.result_destino1 = self.checar_ack(self.configuration["servidor"], self.titulo.get())
+            self.result_destino1 = self.ERRO_DESCONHECIDO
+
+            if self.situacao_copia_servidor1 == self.FALHA_AO_COPIAR_ARQUIVO \
+                    or self.situacao_copia_servidor1 == self.COPIA_CANCELADA \
+                    or self.situacao_copia_servidor1 == self.FALHA_AO_GERAR_XML \
+                    or self.situacao_copia_servidor1 == self.TIMEOUT_COPY_ERROR:
+                self.result_destino1 = self.situacao_copia_servidor1
             else:
-                self.result_destino1 = False
-        except:
-            self.result_destino1 = False
+                self.label_porcent["text"] = "Aguardando arquivo ACK do Servidor 1"
+
+                self.result_destino1 = self.checar_ack(self.configuration["servidor"], self.titulo.get())
+
+                if self.result_destino1 == self.ACK_RECEBIDO:
+                    self.progressbar.pack_forget()
+                    self.label_porcent["text"] = "Arquivo ACK do Servidor 1 recebido com sucesso"
+                elif self.result_destino1 == self.ACK_FALHA:
+                    self.progressbar.pack_forget()
+                    self.label_porcent["text"] = "Erro desconhecido ao receber arquivo ACK Servidor 1"
+                    self.excluir_arquivos(self.configuration["servidor"], self.titulo.get())
+        except ArquivoAckCanceladoError as ex:
+            self.set_progressbar_determinate(False)
+            self.label_porcent["text"] = "Cancelando checagem ACK no Servidor 1"
+            self.excluir_arquivos(self.configuration["servidor"], self.titulo.get())
+            self.result_destino1 = self.RECEPCAO_ACK_CANCELADO
+        except TimeoutAckError as ex:
+            self.excluir_arquivos(self.configuration["servidor"], self.titulo.get())
+            self.result_destino1 = self.TIMEOUT_ACK_ERROR
+        except ArquivoAckFalhaError as ex:
+            self.set_progressbar_determinate(False)
+            self.label_porcent["text"] = "Falha ao receber arquivo ACK no Servidor 1"
+            self.excluir_arquivos(self.configuration["servidor"], self.titulo.get())
+            self.result_destino1 = self.ACK_FALHA
+        except CodigoMaterialError as ex:
+            self.set_progressbar_determinate(False)
+            self.label_porcent["text"] = "Falha código material já existente no Servidor 1"
+            self.excluir_arquivos(self.configuration["servidor"], self.titulo.get())
+            self.result_destino1 = self.MATERIAL_JA_EXISTENTE
+        except ArquivoVideoNotFoundError as ex:
+            self.set_progressbar_determinate(False)
+            self.label_porcent["text"] = "Falha arquivo de vídeo não encontrado no Servidor 1"
+            self.excluir_arquivos(self.configuration["servidor"], self.titulo.get())
+            self.result_destino1 = self.ARQUIVO_VIDEO_NAO_ENCONTRADO
+        except ArquivoVideoInvalidoError as ex:
+            self.set_progressbar_determinate(False)
+            self.label_porcent["text"] = "Falha arquivo de vídeo inválido no Servidor 1"
+            self.excluir_arquivos(self.configuration["servidor"], self.titulo.get())
+            self.result_destino1 = self.ARQUIVO_VIDEO_INVALIDO
+        except TransferirArquivoFalhaError as ex:
+            self.set_progressbar_determinate(False)
+            self.label_porcent["text"] = "Falha ao transferir arquivo para o Servidor 1"
+            self.excluir_arquivos(self.configuration["servidor"], self.titulo.get())
+            self.result_destino1 = self.FALHA_TRANSFERIR_ARQUIVO
 
     def copiar_servidor_2(self, destino, titulo, arquivo, server, codigo_material):
         if self.configuration["habilitar_servidor2"] == 1:
             print("Copia servidor 2")
             try:
                 self.copiar_arquivo_e_gerar_xml(destino, titulo, arquivo, server, codigo_material, 2)
-                self.situacao_copia_servidor2 = True
-            except:
-                self.situacao_copia_servidor2 = False
+                self.situacao_copia_servidor2 = self.TRANSFERIDO_COM_SUCESSO
+            except CopiaCanceladaError as ex:
+                self.set_progressbar_determinate(False, 2)
+                self.label_porcent2["text"] = "Cancelando copia para Servidor 2"
+                self.excluir_arquivos(destino, titulo)
+                self.situacao_copia_servidor2 = self.COPIA_CANCELADA
+            except TimeoutCopyError as ex:
+                self.excluir_arquivos(destino, titulo)
+                self.situacao_copia_servidor2 = self.TIMEOUT_COPY_ERROR
+            except CreateXMLError as ex:
+                self.excluir_arquivos(destino, titulo)
+                self.situacao_copia_servidor2 = self.FALHA_AO_GERAR_XML
+            except (Exception, FileNotFoundError, SpecialFileError, ValueError) as ex:
+                self.excluir_arquivos(destino, titulo)
+                self.situacao_copia_servidor2 = self.FALHA_AO_COPIAR_ARQUIVO
 
     def copiar_servidor_1(self, destino, titulo, arquivo, server, codigo_material):
         print("Copia servidor 1")
         try:
             self.copiar_arquivo_e_gerar_xml(destino, titulo, arquivo, server, codigo_material)
-            self.situacao_copia_servidor1 = True
-        except:
-            self.situacao_copia_servidor1 = False
+            self.situacao_copia_servidor1 = self.TRANSFERIDO_COM_SUCESSO
+        except CopiaCanceladaError as ex:
+            self.set_progressbar_determinate(False)
+            self.label_porcent["text"] = "Cancelando copia para Servidor 1"
+            self.excluir_arquivos(destino, titulo)
+            self.situacao_copia_servidor1 = self.COPIA_CANCELADA
+        except TimeoutCopyError as ex:
+            self.excluir_arquivos(destino, titulo)
+            self.situacao_copia_servidor1 = self.TIMEOUT_COPY_ERROR
+        except CreateXMLError as ex:
+            self.excluir_arquivos(destino, titulo)
+            self.situacao_copia_servidor1 = self.FALHA_AO_GERAR_XML
+        except (Exception, FileNotFoundError, SpecialFileError, ValueError) as ex:
+            self.excluir_arquivos(destino, titulo)
+            self.situacao_copia_servidor1 = self.FALHA_AO_COPIAR_ARQUIVO
 
     def copiar_arquivo_e_gerar_xml(self, destino, titulo, arquivo, server_name, codigo_material, server=1):
-        try:
-            self.update_label_progressbar(True, "0%", server)
-            self.copy_with_callback(arquivo,
-                                    f'{destino}\\{titulo}.mxf',
-                                    server_name,
-                                    None,
-                                    False,
-                                    server
-                                    )
+        self.update_label_progressbar(True, "0%", server)
+        self.copy_with_callback(arquivo,
+                                f'{destino}\\{titulo}.mxf',
+                                server_name,
+                                None,
+                                False,
+                                server
+                                )
 
-            self.update_label_progressbar(False, f"Gerando arquivo xml {server_name}", server)
-            print("Gerar xml " + str(server))
-            self.gerar_xml(destino, titulo, arquivo, codigo_material)
-        except TimeoutCopyError as ex:
-            self.timeout_copy = True
-            MyFile.excluir_arquivo_mxf(destino, titulo)
-            raise Exception(ex)
-        except (CreateXMLError, Exception, FileNotFoundError, SpecialFileError, ValueError) as ex:
-            MyFile.excluir_arquivo_mxf(destino, titulo)
-            MyFile.excluir_arquivo_xml(destino, titulo)
-            raise Exception(ex)
+        self.update_label_progressbar(False, f"Gerando arquivo xml {server_name}", server)
+        print("Gerar xml " + str(server))
+        self.gerar_xml(destino, titulo, arquivo, codigo_material)
 
     def copy_with_callback(self, src, dest, server_name, callback=None, follow_symlinks=True, server=1):
         buffer_size = 4096 * 1024
@@ -552,9 +689,7 @@ class MainForm(ttk.Frame):
         destfile = destpath / srcfile.name if destpath.is_dir() else destpath
 
         if destfile.exists() and srcfile.samefile(destfile):
-            raise SameFileError(
-                f"Arquivo de origem `{src}` e arquivo de destino `{dest}` são iguais."
-            )
+            raise SameFileError(f"Arquivo de origem `{src}` e arquivo de destino `{dest}` são iguais.")
 
         # check for special files, lifted from shutil.copy source
         for fname in [srcfile, destfile]:
@@ -578,9 +713,7 @@ class MainForm(ttk.Frame):
             size = os.stat(src).st_size
             with open(srcfile, "rb") as fsrc:
                 with open(destfile, "wb") as fdest:
-                    self.copy_file(
-                        fsrc, fdest, server_name, callback, size, buffer_size, server
-                    )
+                    self.copy_file(fsrc, fdest, server_name, callback, size, buffer_size, server)
         shutil.copymode(str(srcfile), str(destfile))
         return str(destfile)
 
@@ -588,13 +721,7 @@ class MainForm(ttk.Frame):
         copied = 0
         while True:
             if not self.enviar:
-                if server == 1:
-                    self.set_progressbar_determinate(False)
-                    self.label_porcent["text"] = "Cancelando copia para Servidor 1"
-                else:
-                    self.set_progressbar_determinate(False, 2)
-                    self.label_porcent2["text"] = "Cancelando copia para Servidor 2"
-                break
+                raise CopiaCanceladaError(f"Cópia cancelada")
 
             if not self.stop_watch.check(self.configuration["timeout_ack"]):
                 raise TimeoutCopyError(f"Tempo de espera excedido para realizar a copia do arquivo.")
@@ -630,40 +757,22 @@ class MainForm(ttk.Frame):
         except Exception as ex:
             raise CreateXMLError(f"Falha ao gerar arquivo xml. {ex}")
 
-    def checar_ack(self, caminho, nome_arquivo, server=1) -> bool:
+    def checar_ack(self, caminho, nome_arquivo, server=1) -> int:
         print("checar_ack " + str(server))
-        if server == 1:
-            self.label_porcent["text"] = "Aguardando arquivo ACK do Servidor 1"
-        else:
-            self.label_porcent2["text"] = "Aguardando arquivo ACK do Servidor 2"
 
         arquivo = os.path.join(caminho, f"{nome_arquivo}.ack")
 
         while True:
             if not self.enviar:
-                if server == 1:
-                    self.set_progressbar_determinate(False)
-                    self.label_porcent["text"] = "Cancelando checagem ACK Servidor 1"
-                else:
-                    self.set_progressbar_determinate(False, 2)
-                    self.label_porcent2["text"] = "Cancelando checagem ACK Servidor 2"
-                return False
+                raise ArquivoAckCanceladoError(f"Recepção do arquivo ACK cancelado")
 
             if not self.stop_watch.check(self.configuration["timeout_ack"]):
-                self.timeout_ack = True
-                return False
+                raise TimeoutAckError(f"Tempo de espera excedido para receber o arquivo ACK do servidor")
 
             if os.path.exists(arquivo):
                 while True:
                     if not self.enviar:
-                        if server == 1:
-                            self.set_progressbar_determinate(False)
-                            self.label_porcent["text"] = "Cancelando checagem ACK Servidor"
-                        else:
-                            self.set_progressbar_determinate(False, 2)
-                            self.label_porcent2["text"] = "Cancelando checagem ACK Servidor 2"
-
-                        return False
+                        raise ArquivoAckCanceladoError(f"Recepção do arquivo ACK cancelado")
 
                     try:
                         result = AckXML.read(caminho=caminho, arquivo=f"{nome_arquivo}.ack")
@@ -673,43 +782,20 @@ class MainForm(ttk.Frame):
                         if self.stop_watch.check(self.configuration["timeout_ack"]):
                             continue
                         else:
-                            if server == 1:
-                                self.set_progressbar_determinate(False)
-                                self.label_porcent["text"] = "Falha ao receber arquivo ACK Servidor 1"
-                            else:
-                                self.set_progressbar_determinate(False, 2)
-                                self.label_porcent2["text"] = "Falha ao receber arquivo ACK Servidor 2"
+                            raise ArquivoAckFalhaError(f"Falha ao receber arquivo ACK do servidor")
 
-                            self.timeout_ack = True
-                            return False
-
-                if result[0] == "0":
-                    if server == 1:
-                        self.progressbar.pack_forget()
-                        self.label_porcent["text"] = "Arquivo ACK do Servidor 1 recebido com sucesso"
-                    else:
-                        self.progressbar2.pack_forget()
-                        self.label_porcent2["text"] = "Arquivo ACK do Servidor 2 recebido com sucesso"
-                    return True
-                elif result[0] == "4" \
-                        or result[0] == "8" \
-                        or result[0] == "9" \
-                        or result[0] == "10":
-                    if server == 1:
-                        self.set_progressbar_determinate(False)
-                        self.label_porcent["text"] = "Falha ao receber arquivo ACK Servidor 1"
-                    else:
-                        self.set_progressbar_determinate(False, 2)
-                        self.label_porcent2["text"] = "Falha ao receber arquivo ACK Servidor 2"
-                    return False
+                if int(result[0]) == self.ACK_RECEBIDO:
+                    return self.TRANSFERIDO_COM_SUCESSO
+                elif int(result[0]) == self.MATERIAL_JA_EXISTENTE:
+                    raise CodigoMaterialError(f"O código do material já existe")
+                elif int(result[0]) == self.ARQUIVO_VIDEO_NAO_ENCONTRADO:
+                    raise ArquivoVideoNotFoundError(f"Arquivo de vídeo não encontrado")
+                elif int(result[0]) == self.ARQUIVO_VIDEO_INVALIDO:
+                    raise ArquivoVideoInvalidoError(f"Arquivo de vídeo não encontrado")
+                elif int(result[0]) == self.FALHA_TRANSFERIR_ARQUIVO:
+                    raise TransferirArquivoFalhaError(f"Falha ao copiar arquivo")
                 else:
-                    if server == 1:
-                        self.set_progressbar_determinate(False)
-                        self.label_porcent["text"] = "Erro desconhecido ao receber arquivo ACK Servidor 1"
-                    else:
-                        self.set_progressbar_determinate(False, 2)
-                        self.label_porcent2["text"] = "Erro desconhecido ao receber arquivo ACK Servidor 2"
-                    return False
+                    return self.ACK_FALHA
 
     def exibir_messagebox_concluido(self, result_destino1, result_destino2) -> None:
         if self.configuration["habilitar_servidor2"] == 0 and result_destino1:
@@ -745,6 +831,227 @@ class MainForm(ttk.Frame):
                                  f"{self.configuration['servidor']} e para {self.configuration['servidor2']}.")
             messagebox.showwarning(title="Atenção",
                                    message=f"Falha ao transferir arquivo para os dois Servidores selecionados.")
+
+    def exibir_messagebox_e_log_concluido(self, result_destino1, result_destino2) -> None:
+        message_messagebox, message_log, type_message = self.montar_mensagens_conclusao(result_destino1,
+                                                                                        result_destino2)
+
+        if type_message == "info":
+            messagebox.showinfo(title="Atenção", message=message_messagebox)
+            LogService.save_info(message_log)
+        elif type_message == "warning":
+            messagebox.showwarning(title="Atenção", message=message_messagebox)
+            LogService.save_warning(message_log)
+        elif type_message == "error":
+            messagebox.showerror(title="Atenção", message=message_messagebox)
+            LogService.save_error(message_log)
+
+    def montar_mensagens_conclusao(self, result_destino1: int, result_destino2) -> tuple:
+        message_messagebox = ""
+        message_log = ""
+        type_message = "info"
+
+        if self.configuration["habilitar_servidor2"] == 1:
+            if result_destino1 == self.TRANSFERIDO_COM_SUCESSO and result_destino2 == self.TRANSFERIDO_COM_SUCESSO:
+                message_messagebox = f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para ambos os " \
+                                     f"servidores."
+                message_log = f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para " \
+                              f"{self.configuration['servidor']} e para {self.configuration['servidor2']}."
+                type_message = "info"
+            elif result_destino1 == self.MATERIAL_JA_EXISTENTE and result_destino2 == self.MATERIAL_JA_EXISTENTE:
+                message_messagebox = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para ambos os servidores. " \
+                                     f"Código do material já existente."
+                message_log = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para " \
+                              f"{self.configuration['servidor']} e para {self.configuration['servidor2']}. " \
+                              f"Código do material já existente. (Error Code: {self.MATERIAL_JA_EXISTENTE})"
+                type_message = "error"
+            elif result_destino1 == self.ARQUIVO_VIDEO_NAO_ENCONTRADO \
+                    and result_destino2 == self.ARQUIVO_VIDEO_NAO_ENCONTRADO:
+                message_messagebox = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para ambos os servidores. " \
+                                     f"Arquivo de vídeo não encontrado."
+                message_log = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para " \
+                              f"{self.configuration['servidor']} e para {self.configuration['servidor2']}. " \
+                              f"Arquivo de vídeo não encontrado. (Error Code: {self.ARQUIVO_VIDEO_NAO_ENCONTRADO})"
+                type_message = "error"
+            elif result_destino1 == self.ARQUIVO_VIDEO_INVALIDO \
+                    and result_destino2 == self.ARQUIVO_VIDEO_INVALIDO:
+                message_messagebox = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para ambos os servidores. " \
+                                     f"Arquivo de vídeo inválido."
+                message_log = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para " \
+                              f"{self.configuration['servidor']} e para {self.configuration['servidor2']}. " \
+                              f"Arquivo de vídeo inválido. (Error Code: {self.ARQUIVO_VIDEO_INVALIDO})"
+                type_message = "error"
+            elif result_destino1 == self.FALHA_TRANSFERIR_ARQUIVO \
+                    and result_destino2 == self.FALHA_TRANSFERIR_ARQUIVO:
+                message_messagebox = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para ambos os servidores."
+                message_log = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para " \
+                              f"{self.configuration['servidor']} e para {self.configuration['servidor2']}. " \
+                              f"(Error Code: {self.FALHA_TRANSFERIR_ARQUIVO})"
+                type_message = "error"
+            elif result_destino1 == self.FALHA_AO_COPIAR_ARQUIVO \
+                    and result_destino2 == self.FALHA_AO_COPIAR_ARQUIVO:
+                message_messagebox = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para ambos os servidores. " \
+                                     f"Falha no processo de cópia."
+                message_log = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para " \
+                              f"{self.configuration['servidor']} e para {self.configuration['servidor2']}. " \
+                              f"Falha no processo de cópia."
+                type_message = "error"
+            elif result_destino1 == self.COPIA_CANCELADA \
+                    and result_destino2 == self.COPIA_CANCELADA:
+                message_messagebox = f"Cópia do arquivo {self.titulo.get()}.mxf cancelada para ambos os servidores."
+                message_log = f"Cópia do arquivo {self.titulo.get()}.mxf cancelada para " \
+                              f"{self.configuration['servidor']} e para {self.configuration['servidor2']}."
+                type_message = "warning"
+            elif result_destino1 == self.FALHA_AO_GERAR_XML \
+                    and result_destino2 == self.FALHA_AO_GERAR_XML:
+                message_messagebox = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para ambos os servidores. " \
+                                     f"Falha ao gerar arquivo xml."
+                message_log = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para " \
+                              f"{self.configuration['servidor']} e para {self.configuration['servidor2']}. " \
+                              f"Falha ao gerar arquivo xml."
+                type_message = "error"
+            elif result_destino1 == self.TIMEOUT_COPY_ERROR \
+                    and result_destino2 == self.TIMEOUT_COPY_ERROR:
+                message_messagebox = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para ambos os servidores. " \
+                                     f"Timeout error na copia do arquivo."
+                message_log = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para " \
+                              f"{self.configuration['servidor']} e para {self.configuration['servidor2']}. " \
+                              f"Timeout error na copia do arquivo."
+                type_message = "error"
+            elif result_destino1 == self.RECEPCAO_ACK_CANCELADO \
+                    and result_destino2 == self.RECEPCAO_ACK_CANCELADO:
+                message_messagebox = f"Confirmação de captura do arquivo {self.titulo.get()}.mxf não recebida para ambos " \
+                                     f"os servidores. Verifique manualmente nos servidores."
+                message_log = f"Confirmação de captura do arquivo {self.titulo.get()}.mxf não recebida para " \
+                              f"{self.configuration['servidor']} e para {self.configuration['servidor2']}."
+                type_message = "warning"
+            elif result_destino1 == self.ACK_FALHA \
+                    and result_destino2 == self.ACK_FALHA:
+                message_messagebox = f"Arquivo de confirmação corrompido para a captura do " \
+                                     f"arquivo {self.titulo.get()}.mxf em ambos os servidores." \
+                                     f"Verifique manualmente nos servidores."
+                message_log = f"Arquivo de confirmação corrompido para a captura do " \
+                              f"arquivo {self.titulo.get()}.mxf em " \
+                              f"{self.configuration['servidor']} e {self.configuration['servidor2']}."
+                type_message = "error"
+            elif result_destino1 == self.TIMEOUT_ACK_ERROR \
+                    and result_destino2 == self.TIMEOUT_ACK_ERROR:
+                message_messagebox = f"Falha ao receber arquivo de confirmação para a captura do arquivo " \
+                                     f"{self.titulo.get()}.mxf em ambos os servidores." \
+                                     f"Timeout error na recepção do arquivo de confirmação."
+                message_log = f"Falha ao receber arquivo de confirmação para a captura do arquivo " \
+                              f"{self.titulo.get()}.mxf para " \
+                              f"{self.configuration['servidor']} e para {self.configuration['servidor2']}. " \
+                              f"Timeout error na recepção do arquivo de confirmação."
+                type_message = "error"
+            elif result_destino1 == self.ERRO_DESCONHECIDO \
+                    and result_destino2 == self.ERRO_DESCONHECIDO:
+                message_messagebox = f"Erro desconhecido ao transferir arquivo {self.titulo.get()}.mxf ou na " \
+                                     f"recepção do arquivo de confirmação."
+                message_log = f"Erro desconhecido ao transferir arquivo {self.titulo.get()}.mxf ou na recepção do " \
+                              f"arquivo de confirmação."
+                type_message = "error"
+            else:
+                message_messagebox_aux, message_log_aux, type_message_aux = self.exibir_mensagens_conclusao(
+                    result_destino1,
+                    1)
+                message_messagebox, message_log, type_message = self.exibir_mensagens_conclusao(result_destino2, 2)
+
+                return message_messagebox_aux + message_messagebox, message_log_aux + message_log, 'warning'
+        else:
+            message_messagebox, message_log, type_message = self.exibir_mensagens_conclusao(result_destino1, 1)
+
+        return message_messagebox, message_log, type_message
+
+    def exibir_mensagens_conclusao(self, result_destino, server=1):
+        message_messagebox = ""
+        message_log = ""
+        type_message = "info"
+
+        path_servidor = self.configuration['servidor2']
+        if server == 1:
+            path_servidor = self.configuration['servidor']
+
+        if result_destino == self.TRANSFERIDO_COM_SUCESSO:
+            message_messagebox = f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para o Servidor {server}."
+            message_log = f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para {path_servidor}. "
+            type_message = "info"
+        elif result_destino == self.MATERIAL_JA_EXISTENTE:
+            message_messagebox = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para o Servidor {server}." \
+                                 f"Código do material já existente."
+            message_log = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para {path_servidor}. " \
+                          f"Código do material já existente. (Error Code: {self.MATERIAL_JA_EXISTENTE}) "
+            type_message = "error"
+        elif result_destino == self.ARQUIVO_VIDEO_NAO_ENCONTRADO:
+            message_messagebox = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para o Servidor {server}. " \
+                                 f"Arquivo de vídeo não encontrado."
+            message_log = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para {path_servidor}. " \
+                          f"Arquivo de vídeo não encontrado. (Error Code: {self.ARQUIVO_VIDEO_NAO_ENCONTRADO}) "
+            type_message = "error"
+        elif result_destino == self.ARQUIVO_VIDEO_INVALIDO:
+            message_messagebox = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para o Servidor {server}. " \
+                                 f"Arquivo de vídeo inválido."
+            message_log = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para " \
+                          f"{path_servidor}. " \
+                          f"Arquivo de vídeo inválido. (Error Code: {self.ARQUIVO_VIDEO_INVALIDO}) "
+            type_message = "error"
+        elif result_destino == self.FALHA_TRANSFERIR_ARQUIVO:
+            message_messagebox = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para o Servidor {server}."
+            message_log = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para " \
+                          f"{path_servidor}. " \
+                          f"(Error Code: {self.FALHA_TRANSFERIR_ARQUIVO}) "
+            type_message = "error"
+        elif result_destino == self.FALHA_AO_COPIAR_ARQUIVO:
+            message_messagebox = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para o Servidor {server}. " \
+                                 f"Falha no processo de cópia."
+            message_log = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para {path_servidor}. " \
+                          f"Falha no processo de cópia. "
+            type_message = "error"
+        elif result_destino == self.COPIA_CANCELADA:
+            message_messagebox = f"Cópia do arquivo {self.titulo.get()}.mxf cancelada para o Servidor {server}."
+            message_log = f"Cópia do arquivo {self.titulo.get()}.mxf cancelada para {path_servidor}."
+            type_message = "warning"
+        elif result_destino == self.FALHA_AO_GERAR_XML:
+            message_messagebox = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para o Servidor {server}. " \
+                                 f"Falha ao gerar arquivo xml."
+            message_log = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para {path_servidor}. " \
+                          f"Falha ao gerar arquivo xml. "
+            type_message = "error"
+        elif result_destino == self.TIMEOUT_COPY_ERROR:
+            message_messagebox = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para o Servidor {server}. " \
+                                 f"Timeout error na copia do arquivo. "
+            message_log = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para {path_servidor}. " \
+                          f"Timeout error na copia do arquivo. "
+            type_message = "error"
+        elif result_destino == self.RECEPCAO_ACK_CANCELADO:
+            message_messagebox = f"Confirmação de captura do arquivo {self.titulo.get()}.mxf não recebida o " \
+                                 f"Servidor {server}. Verifique manualmente no servidor. "
+            message_log = f"Confirmação de captura do arquivo {self.titulo.get()}.mxf não recebida para " \
+                          f"{path_servidor}. "
+            type_message = "warning"
+        elif result_destino == self.ACK_FALHA:
+            message_messagebox = f"Arquivo de confirmação corrompido para a captura do " \
+                                 f"arquivo {self.titulo.get()}.mxf no Servidor {server}." \
+                                 f"Verifique manualmente no servidor. "
+            message_log = f"Arquivo de confirmação corrompido para a captura do " \
+                          f"arquivo {self.titulo.get()}.mxf em {path_servidor}. "
+            type_message = "error"
+        elif result_destino == self.TIMEOUT_ACK_ERROR:
+            message_messagebox = f"Falha ao receber arquivo de confirmação para a captura do arquivo " \
+                                 f"{self.titulo.get()}.mxf no servidor {server}." \
+                                 f"Timeout error na recepção do arquivo de confirmação. "
+            message_log = f"Falha ao receber arquivo de confirmação para a captura do arquivo " \
+                          f"{self.titulo.get()}.mxf para {path_servidor}. " \
+                          f"Timeout error na recepção do arquivo de confirmação. "
+            type_message = "error"
+        else:
+            message_messagebox = f"Erro desconhecido ao transferir arquivo {self.titulo.get()}.mxf ou na recepção do " \
+                                 f"arquivo de confirmação para o Servidor {server}."
+            message_log = f"Erro desconhecido ao transferir arquivo {self.titulo.get()}.mxf ou na recepção do " \
+                          f"arquivo de confirmação para {path_servidor}."
+            type_message = "error"
+
+        return message_messagebox, message_log, type_message
 
     def excluir_arquivos_servidores(self) -> None:
         self.excluir_arquivos(self.configuration["servidor"], self.titulo.get())
