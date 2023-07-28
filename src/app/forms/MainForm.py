@@ -1154,7 +1154,6 @@ class MainForm(ttk.Frame):
             messagebox.showwarning(title="Atenção", message="Em configurações o campo Usuário devem ser preenchido.")
             return False
         if self.arquivo.get() is None or self.arquivo.get() == "":
-            self.entry_arquivo.configure(bootstyle="danger")
             messagebox.showwarning(title="Atenção", message="O campo Arquivo deve ser selecionado.")
             return False
         if MyFile.extensao_arquivo(self.arquivo.get()) != ".MXF" \
