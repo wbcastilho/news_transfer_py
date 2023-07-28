@@ -74,8 +74,6 @@ class MainForm(ttk.Frame):
         self.situacao_copia_servidor2 = False
         self.result_destino1 = False
         self.result_destino2 = False
-        self.timeout_ack = False
-        self.timeout_copy = False
         self.stop_watch = None
 
         self.arquivo = ttk.StringVar()
@@ -90,7 +88,6 @@ class MainForm(ttk.Frame):
         self.entry_titulo = None
         self.combobox_grupo = None
         self.progressbar = None
-        self.label_porcent = None
         self.progressbar2 = None
         self.label_porcent2 = None
         self.progress_slider = None
@@ -429,8 +426,6 @@ class MainForm(ttk.Frame):
         self.situacao_copia_servidor2 = self.FALHA_AO_COPIAR_ARQUIVO
         self.result_destino1 = self.FALHA_TRANSFERIR_ARQUIVO
         self.result_destino2 = self.FALHA_TRANSFERIR_ARQUIVO
-        # self.timeout_copy = False
-        # self.timeout_ack = False
 
         self.change_form_action_state(False)
 
@@ -479,26 +474,11 @@ class MainForm(ttk.Frame):
             self.update_label_progressbar(True, "100%", 2)
             self.change_button_action_state(True)
 
-            # if self.enviar:
-            # if self.timeout_copy:
-            #     raise Exception(f"Tempo de espera excedido para realizar a copia do arquivo.")
-            # elif self.timeout_ack:
-            #     raise Exception(f"Tempo de espera excedido para receber o arquivo de checagem.")
-            # else:
-
-            # self.exibir_messagebox_concluido(self.result_destino1, self.result_destino2)
             self.exibir_messagebox_e_log_concluido(self.result_destino1, self.result_destino2)
             self.clean_fields()
             self.label_thumbnail.place_forget()
             self.video.place_forget()
-
-            # else:
-            #     self.excluir_arquivos_servidores()
-            #     LogService.save_warning(f"Transferência cancelada pelo usuário.")
-            #     messagebox.showwarning(title="Atenção", message="Transferência cancelada pelo usuário.")
         except Exception as ex:
-            # if not self.timeout_copy:
-            #     self.excluir_arquivos_servidores()
             self.show_progressbar(False)
             self.show_progressbar(False, 2)
             self.set_progressbar_determinate(True)
@@ -776,7 +756,6 @@ class MainForm(ttk.Frame):
 
                     try:
                         result = AckXML.read(caminho=caminho, arquivo=f"{nome_arquivo}.ack")
-                        os.remove(arquivo)
                         break
                     except Exception:
                         if self.stop_watch.check(self.configuration["timeout_ack"]):
@@ -796,41 +775,6 @@ class MainForm(ttk.Frame):
                     raise TransferirArquivoFalhaError(f"Falha ao copiar arquivo")
                 else:
                     return self.ACK_FALHA
-
-    def exibir_messagebox_concluido(self, result_destino1, result_destino2) -> None:
-        if self.configuration["habilitar_servidor2"] == 0 and result_destino1:
-            LogService.save_info(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso "
-                                 f"para {self.configuration['servidor']}")
-            messagebox.showinfo(title="Atenção", message=f"Arquivo {self.titulo.get()}.mxf "
-                                                         f"transferido com sucesso para o Servidor 1!")
-        elif self.configuration["habilitar_servidor2"] == 0 and not result_destino1:
-            LogService.save_info("Falha ao transferir arquivo.")
-            messagebox.showinfo(title="Atenção", message="Falha ao transferir arquivo.")
-        elif result_destino1 and result_destino2:
-            LogService.save_info(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
-                                 f"{self.configuration['servidor']} e para {self.configuration['servidor2']}")
-            messagebox.showinfo(title="Atenção", message=f"Arquivo {self.titulo.get()}.mxf "
-                                                         f"transferido com sucesso para os dois Servidores.")
-        elif result_destino1:
-            LogService.save_info(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
-                                 f"{self.configuration['servidor']} mas apresentou falha o ser transferido para "
-                                 f"{self.configuration['servidor2']}")
-            messagebox.showwarning(title="Atenção",
-                                   message=f"Arquivo {self.titulo.get()}.mxf "
-                                           f"transferido com sucesso para o Servidor 1 mas "
-                                           f"apresentou falha ao ser transferido ao Servidor 2.")
-        elif result_destino2:
-            LogService.save_info(f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para "
-                                 f"{self.configuration['servidor2']} mas apresentou falha o ser transferido para "
-                                 f"{self.configuration['servidor']}")
-            messagebox.showwarning(title="Atenção",
-                                   message=f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para o "
-                                           f"Servidor 2 mas apresentou falha ao ser transferido ao Servidor 1.")
-        else:
-            LogService.save_info(f"Falha ao transferir arquivo {self.titulo.get()}.mxf para "
-                                 f"{self.configuration['servidor']} e para {self.configuration['servidor2']}.")
-            messagebox.showwarning(title="Atenção",
-                                   message=f"Falha ao transferir arquivo para os dois Servidores selecionados.")
 
     def exibir_messagebox_e_log_concluido(self, result_destino1, result_destino2) -> None:
         message_messagebox, message_log, type_message = self.montar_mensagens_conclusao(result_destino1,
@@ -920,10 +864,13 @@ class MainForm(ttk.Frame):
                 type_message = "error"
             elif result_destino1 == self.RECEPCAO_ACK_CANCELADO \
                     and result_destino2 == self.RECEPCAO_ACK_CANCELADO:
-                message_messagebox = f"Confirmação de captura do arquivo {self.titulo.get()}.mxf não recebida para ambos " \
-                                     f"os servidores. Verifique manualmente nos servidores."
-                message_log = f"Confirmação de captura do arquivo {self.titulo.get()}.mxf não recebida para " \
-                              f"{self.configuration['servidor']} e para {self.configuration['servidor2']}."
+                message_messagebox = f"Recepção do arquivo de confirmação cancelada para captura do " \
+                                     f"arquivo {self.titulo.get()}.mxf em " \
+                                     f"ambos os servidores. Verifique manualmente nos servidores."
+                message_log = f"Recepção do arquivo de confirmação cancelada para captura do " \
+                              f"arquivo {self.titulo.get()}.mxf em " \
+                              f"{self.configuration['servidor']} e {self.configuration['servidor2']}. " \
+                              f"Verifique manualmente nos servidores."
                 type_message = "warning"
             elif result_destino1 == self.ACK_FALHA \
                     and result_destino2 == self.ACK_FALHA:
@@ -973,24 +920,24 @@ class MainForm(ttk.Frame):
             path_servidor = self.configuration['servidor']
 
         if result_destino == self.TRANSFERIDO_COM_SUCESSO:
-            message_messagebox = f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para o Servidor {server}."
+            message_messagebox = f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para o Servidor {server}. "
             message_log = f"Arquivo {self.titulo.get()}.mxf transferido com sucesso para {path_servidor}. "
             type_message = "info"
         elif result_destino == self.MATERIAL_JA_EXISTENTE:
             message_messagebox = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para o Servidor {server}." \
-                                 f"Código do material já existente."
+                                 f"Código do material já existente. "
             message_log = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para {path_servidor}. " \
                           f"Código do material já existente. (Error Code: {self.MATERIAL_JA_EXISTENTE}) "
             type_message = "error"
         elif result_destino == self.ARQUIVO_VIDEO_NAO_ENCONTRADO:
             message_messagebox = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para o Servidor {server}. " \
-                                 f"Arquivo de vídeo não encontrado."
+                                 f"Arquivo de vídeo não encontrado. "
             message_log = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para {path_servidor}. " \
                           f"Arquivo de vídeo não encontrado. (Error Code: {self.ARQUIVO_VIDEO_NAO_ENCONTRADO}) "
             type_message = "error"
         elif result_destino == self.ARQUIVO_VIDEO_INVALIDO:
             message_messagebox = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para o Servidor {server}. " \
-                                 f"Arquivo de vídeo inválido."
+                                 f"Arquivo de vídeo inválido. "
             message_log = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para " \
                           f"{path_servidor}. " \
                           f"Arquivo de vídeo inválido. (Error Code: {self.ARQUIVO_VIDEO_INVALIDO}) "
@@ -998,22 +945,21 @@ class MainForm(ttk.Frame):
         elif result_destino == self.FALHA_TRANSFERIR_ARQUIVO:
             message_messagebox = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para o Servidor {server}."
             message_log = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para " \
-                          f"{path_servidor}. " \
-                          f"(Error Code: {self.FALHA_TRANSFERIR_ARQUIVO}) "
+                          f"{path_servidor}. (Error Code: {self.FALHA_TRANSFERIR_ARQUIVO}) "
             type_message = "error"
         elif result_destino == self.FALHA_AO_COPIAR_ARQUIVO:
             message_messagebox = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para o Servidor {server}. " \
-                                 f"Falha no processo de cópia."
+                                 f"Falha no processo de cópia. "
             message_log = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para {path_servidor}. " \
                           f"Falha no processo de cópia. "
             type_message = "error"
         elif result_destino == self.COPIA_CANCELADA:
-            message_messagebox = f"Cópia do arquivo {self.titulo.get()}.mxf cancelada para o Servidor {server}."
-            message_log = f"Cópia do arquivo {self.titulo.get()}.mxf cancelada para {path_servidor}."
+            message_messagebox = f"Cópia do arquivo {self.titulo.get()}.mxf cancelada para o Servidor {server}. "
+            message_log = f"Cópia do arquivo {self.titulo.get()}.mxf cancelada para {path_servidor}. "
             type_message = "warning"
         elif result_destino == self.FALHA_AO_GERAR_XML:
             message_messagebox = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para o Servidor {server}. " \
-                                 f"Falha ao gerar arquivo xml."
+                                 f"Falha ao gerar arquivo xml. "
             message_log = f"Falha ao transferir arquivo {self.titulo.get()}.mxf para {path_servidor}. " \
                           f"Falha ao gerar arquivo xml. "
             type_message = "error"
@@ -1038,7 +984,7 @@ class MainForm(ttk.Frame):
             type_message = "error"
         elif result_destino == self.TIMEOUT_ACK_ERROR:
             message_messagebox = f"Falha ao receber arquivo de confirmação para a captura do arquivo " \
-                                 f"{self.titulo.get()}.mxf no servidor {server}." \
+                                 f"{self.titulo.get()}.mxf no servidor {server}. " \
                                  f"Timeout error na recepção do arquivo de confirmação. "
             message_log = f"Falha ao receber arquivo de confirmação para a captura do arquivo " \
                           f"{self.titulo.get()}.mxf para {path_servidor}. " \
@@ -1046,9 +992,9 @@ class MainForm(ttk.Frame):
             type_message = "error"
         else:
             message_messagebox = f"Erro desconhecido ao transferir arquivo {self.titulo.get()}.mxf ou na recepção do " \
-                                 f"arquivo de confirmação para o Servidor {server}."
+                                 f"arquivo de confirmação para o Servidor {server}. "
             message_log = f"Erro desconhecido ao transferir arquivo {self.titulo.get()}.mxf ou na recepção do " \
-                          f"arquivo de confirmação para {path_servidor}."
+                          f"arquivo de confirmação para {path_servidor}. "
             type_message = "error"
 
         return message_messagebox, message_log, type_message
