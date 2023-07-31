@@ -38,6 +38,7 @@ from src.business.exceptions.CopiaCanceladaError import CopiaCanceladaError
 from src.business.exceptions.TransferirArquivoFalhaError import TransferirArquivoFalhaError
 from src.business.exceptions.CopiarArquivoError import CopiarArquivoError
 
+
 class MainForm(ttk.Frame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -167,9 +168,6 @@ class MainForm(ttk.Frame):
 
         label = ttk.Label(frame, text="Arquivo", font=("Helvetica", 10))
         label.grid(row=0, column=0, padx=1, sticky=ttk.NE)
-        # self.entry_arquivo = ttk.Entry(frame, width=70, textvariable=self.arquivo, state="disabled",
-        #                                font=("Helvetica", 10))
-        # self.entry_arquivo.grid(row=0, column=1, padx=2, sticky=ttk.W)
 
         self.entry_arquivo = ttk1.Text(frame, width=70, height=3, wrap=WORD, state="disabled", font=("Helvetica", 10),
                                        foreground="red")
@@ -281,6 +279,12 @@ class MainForm(ttk.Frame):
             self.label_thumbnail.place_forget()
         else:
             messagebox.showwarning(title="Atenção", message="Para reproduzir em Preview selecione antes um arquivo.")
+
+    def stop(self):
+        self.video.pause()
+        self.progress_slider.set(0)
+        self.progress_slider.configure(state="disabled")
+        self.button_play_pause['image'] = 'play-icon'
 
     def seek(self, value):
         self.video.seek(int(value))
@@ -476,6 +480,11 @@ class MainForm(ttk.Frame):
             self.change_button_action_state(True)
 
             self.exibir_messagebox_e_log_concluido(self.result_destino1, self.result_destino2)
+
+            if self.configuration["habilitar_servidor2"] == 1:
+                MyFile.excluir_arquivo_ack(self.configuration["servidor2"], self.titulo.get())
+            MyFile.excluir_arquivo_ack(self.configuration["servidor"], self.titulo.get())
+
             self.clean_fields()
             self.label_thumbnail.place_forget()
             self.video.place_forget()
@@ -492,6 +501,7 @@ class MainForm(ttk.Frame):
         finally:
             self.enviar = False
             self.change_form_action_state(True)
+            self.stop()
 
     def checar_ack_servidor_2(self):
         if self.configuration["habilitar_servidor2"] == 1:
