@@ -1150,5 +1150,8 @@ class MainForm(ttk.Frame):
             self.combobox_grupo.focus()
             messagebox.showwarning(title="Atenção", message="O valor selecionado é inválido para o campo Grupo.")
             return False
+        if not os.path.exists('ffmpeg.exe'):
+            messagebox.showwarning(title="Atenção", message="Arquivo ffmpeg.exe não encontrado.")
+            return False
         return True
 
