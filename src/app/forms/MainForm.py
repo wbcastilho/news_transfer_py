@@ -267,18 +267,20 @@ class MainForm(ttk.Frame):
             self.generate_thumbnail(file_path)
 
     def play(self):
-        if self.arquivo.get() != '':
-            if self.button_play_pause['image'] == ('play-icon',):
-                self.button_play_pause['image'] = 'pause-icon'
-                self.progress_slider.configure(state="normal")
-                self.video.play()
-            else:
-                self.button_play_pause['image'] = 'play-icon'
-                self.video.pause()
+        if not self.enviar:
+            if self.arquivo.get() != '':
+                if self.button_play_pause['image'] == ('play-icon',):
+                    self.button_play_pause['image'] = 'pause-icon'
+                    self.progress_slider.configure(state="normal")
+                    self.video.play()
+                else:
+                    self.button_play_pause['image'] = 'play-icon'
+                    self.video.pause()
 
-            self.label_thumbnail.place_forget()
-        else:
-            messagebox.showwarning(title="Atenção", message="Para reproduzir em Preview selecione antes um arquivo.")
+                self.label_thumbnail.place_forget()
+            else:
+                messagebox.showwarning(title="Atenção",
+                                       message="Para reproduzir em Preview selecione antes um arquivo.")
 
     def stop(self):
         self.video.pause()
@@ -288,6 +290,14 @@ class MainForm(ttk.Frame):
 
     def seek(self, value):
         self.video.seek(int(value))
+
+    def video_begin(self):
+        self.video.pause()
+        self.progress_slider.set(self.progress_slider["to"])
+        self.progress_slider.set(0)
+        self.label_thumbnail.place(x=0, y=0)
+        self.progress_slider.configure(state="disabled")
+        self.button_play_pause['image'] = 'play-icon'
 
     def update_scale(self, event):
         self.progress_value.set(int(self.video.current_duration()))
@@ -434,9 +444,10 @@ class MainForm(ttk.Frame):
 
         self.change_form_action_state(False)
 
+        self.video_begin()
+
         try:
             self.stop_watch = StopWatch()
-            self.video.stop()
 
             codigo_material = MyRandom.gerar_codigo()
 
