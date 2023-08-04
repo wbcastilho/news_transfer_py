@@ -11,7 +11,6 @@ from PIL import Image, ImageTk
 from tkinter import filedialog
 from tkinter import messagebox
 from ttkbootstrap.constants import *
-import tkinter.font as font
 
 from src.app.forms.LogForm import LogsForm
 from src.business.utils.Helper import Helper
@@ -204,7 +203,7 @@ class MainForm(ttk.Frame):
         label_frame.pack(side=RIGHT, padx=20, pady=(5, 15), anchor=ttk.N)
 
         frame = ttk.Frame(label_frame)
-        frame.pack(fill="x", padx=20, pady=(30, 30))
+        frame.pack(fill="x", padx=20, pady=(30, 24))
 
         video_frame = ttk.Frame(frame, bootstyle="dark", width=275, height=140)
         video_frame.grid(row=0)
