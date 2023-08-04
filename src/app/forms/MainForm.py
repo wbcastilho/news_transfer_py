@@ -11,6 +11,7 @@ from PIL import Image, ImageTk
 from tkinter import filedialog
 from tkinter import messagebox
 from ttkbootstrap.constants import *
+import tkinter.font as font
 
 from src.app.forms.LogForm import LogsForm
 from src.business.utils.Helper import Helper
@@ -203,7 +204,7 @@ class MainForm(ttk.Frame):
         label_frame.pack(side=RIGHT, padx=20, pady=(5, 15), anchor=ttk.N)
 
         frame = ttk.Frame(label_frame)
-        frame.pack(fill="x", padx=20, pady=35)
+        frame.pack(fill="x", padx=20, pady=(30, 30))
 
         video_frame = ttk.Frame(frame, bootstyle="dark", width=275, height=140)
         video_frame.grid(row=0)
@@ -281,8 +282,12 @@ class MainForm(ttk.Frame):
             else:
                 messagebox.showwarning(title="Atenção",
                                        message="Para reproduzir em Preview selecione antes um arquivo.")
+        else:
+            messagebox.showwarning(title="Atenção",
+                                   message="Não é possível reproduzir o vídeo enquanto o arquivo é transferido.")
 
     def stop(self):
+        self.video.seek(0)
         self.video.pause()
         self.progress_slider.set(0)
         self.progress_slider.configure(state="disabled")
@@ -292,6 +297,7 @@ class MainForm(ttk.Frame):
         self.video.seek(int(value))
 
     def video_begin(self):
+        self.video.seek(0)
         self.video.pause()
         self.progress_slider.set(self.progress_slider["to"])
         self.progress_slider.set(0)
@@ -378,7 +384,7 @@ class MainForm(ttk.Frame):
             SettingsForm(setting_form, self)
         else:
             messagebox.showwarning(title="Atenção", message="Para abrir a janela de configurações é necessário antes "
-                                                            "parar a monitoração clicando no botão Parar.")
+                                                            "parar a transferência clicando em Cancelar transferência.")
 
     @staticmethod
     def on_logs():
