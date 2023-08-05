@@ -312,6 +312,7 @@ class MainForm(ttk.Frame):
         self.progress_slider["to"] = duration
 
     def video_ended(self, event):
+        self.video.seek(0)
         self.progress_slider.set(self.progress_slider["to"])
         self.progress_slider.set(0)
         self.label_thumbnail.place(x=0, y=0)
