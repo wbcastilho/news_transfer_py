@@ -14,7 +14,7 @@ class MyJSON:
                         self.configuration['timeout_ack'],
                         self.configuration['usuario'],
                         self.configuration['grupos'],
-                        self.configuration['remover'])
+                        self.configuration['remover'],)
 
         try:
             with open(self.file, 'w') as f:

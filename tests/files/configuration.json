@@ -1,1 +1,1 @@
-{"servidor": "C:/", "servidor2": "D:/", "habilitar_servidor2": 0, "timeout_ack": 15, "usuario": "User", "grupos": ["Grupo 1", "Grupo 2"]}
+{"servidor": "C:/", "servidor2": "D:/", "habilitar_servidor2": 0, "timeout_ack": 15, "usuario": "User", "grupos": ["Grupo 1", "Grupo 2"], "remover": 1}

@@ -11,7 +11,8 @@ class TestMyJSON(unittest.TestCase):
             'habilitar_servidor2': 0,
             'timeout_ack': 15,
             'usuario': "User",
-            'grupos': ["Grupo 1", "Grupo 2"]
+            'grupos': ["Grupo 1", "Grupo 2"],
+            'remover': 1
         }
 
     """ Método chamado depois de cada teste """
@@ -27,6 +28,7 @@ class TestMyJSON(unittest.TestCase):
         self.assertEqual(self.configuration["habilitar_servidor2"], 0)
         self.assertEqual(self.configuration["timeout_ack"], 15)
         self.assertEqual(self.configuration["usuario"], "User")
+        self.assertEqual(self.configuration["remover"], 1)
 
     def test_write(self):
         my_json = MyJSON('tests\\files\\configuration_write.json', self.configuration)
@@ -38,6 +40,7 @@ class TestMyJSON(unittest.TestCase):
         self.assertEqual(self.configuration["habilitar_servidor2"], 0)
         self.assertEqual(self.configuration["timeout_ack"], 15)
         self.assertEqual(self.configuration["usuario"], "User")
+        self.assertEqual(self.configuration["remover"], 1)
 
 
 if __name__ == '__main__':
