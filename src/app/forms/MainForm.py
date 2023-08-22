@@ -12,6 +12,7 @@ from tkinter import filedialog
 from tkinter import messagebox
 from ttkbootstrap.constants import *
 
+from src.business.utils.Helper import Helper
 from src.app.forms.LogForm import LogsForm
 from src.business.utils.Helper import Helper
 from src.business.adapters.AckXML import AckXML
@@ -425,6 +426,8 @@ class MainForm(ttk.Frame):
             self.entry_arquivo.config(state=DISABLED)
 
             self.load_video(filename)
+
+            self.titulo.set(Helper.exibir_retranca(filename))
 
     def on_action(self) -> None:
         if not self.enviar:

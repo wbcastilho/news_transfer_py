@@ -1,4 +1,5 @@
 import re
+from unidecode import unidecode
 
 
 class Helper:
@@ -11,3 +12,37 @@ class Helper:
             return True
         else:
             return False
+
+    @staticmethod
+    def substituir_espaco_por_underline(texto: str) -> str:
+        return texto.replace(" ", "_")
+
+    @staticmethod
+    def remover_acentuacao(texto: str) -> str:
+        return unidecode(texto)
+
+    @staticmethod
+    def pegar_nome_do_arquivo(texto: str) -> str:
+        arquivo = texto.split('/')
+        nome_arquivo = arquivo[-1].split('.')
+        return nome_arquivo[0]
+
+    @staticmethod
+    def remover_caracteres_especiais(texto):
+        """
+        Remove caracteres especiais exceto underline e hífen
+        :param texto:
+        :return:
+        """
+        texto_limpo = re.sub(r'[^\w\s-]', '', texto)
+        return texto_limpo
+
+    @staticmethod
+    def exibir_retranca(texto):
+        return Helper.remover_caracteres_especiais(
+            Helper.remover_acentuacao(
+                Helper.substituir_espaco_por_underline(
+                    Helper.pegar_nome_do_arquivo(texto)
+                )
+            )
+        )
