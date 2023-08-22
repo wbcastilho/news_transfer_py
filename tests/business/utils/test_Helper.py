@@ -34,8 +34,8 @@ class TestHelper(unittest.TestCase):
         self.assertEqual(expected, Helper.remover_caracteres_especiais(texto))
 
     def test_exibir_retranca(self):
-        texto = "C:/Users/Manutencao.sm/Desktop/VIDEOS TESTE/2006_BDC_BO PETS !CINOMÔSE_.MXF"
-        expected = "2006_BDC_BO_PETS_CINOMOSE_"
+        texto = "C:/Users/Manutencao.sm/Desktop/VIDEOS TESTE/2006_BDC_BO PETS !CINOMÔSEa_.MXF"
+        expected = "2006_BDC_BO_PETS_CINOMOSEA_"
 
         self.assertEqual(expected, Helper.exibir_retranca(texto))
 

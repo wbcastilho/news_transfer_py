@@ -45,7 +45,7 @@ class Helper:
                     Helper.pegar_nome_do_arquivo(texto)
                 )
             )
-        )
+        ).upper()
 
     @staticmethod
     def pegar_caminho_do_arquivo(texto: str) -> str:
