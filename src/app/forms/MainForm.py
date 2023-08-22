@@ -77,6 +77,7 @@ class MainForm(ttk.Frame):
         self.result_destino1 = False
         self.result_destino2 = False
         self.stop_watch = None
+        self.initial_dir = "c:/"
 
         self.arquivo = ttk.StringVar()
         self.titulo = ttk.StringVar()
@@ -402,7 +403,9 @@ class MainForm(ttk.Frame):
             ('MXF Files', '*.mxf'),
         )
 
-        filename = filedialog.askopenfilename(title='Selecionar Arquivo', initialdir='c:/', filetypes=filetypes)
+        filename = filedialog.askopenfilename(title='Selecionar Arquivo',
+                                              initialdir=self.initial_dir,
+                                              filetypes=filetypes)
 
         if filename:
             self.arquivo.set(filename)
@@ -426,6 +429,8 @@ class MainForm(ttk.Frame):
             self.entry_arquivo.config(state=DISABLED)
 
             self.load_video(filename)
+
+            self.initial_dir = Helper.pegar_caminho_do_arquivo(filename)
 
             self.titulo.set(Helper.exibir_retranca(filename))
 

@@ -39,6 +39,12 @@ class TestHelper(unittest.TestCase):
 
         self.assertEqual(expected, Helper.exibir_retranca(texto))
 
+    def test_pegar_caminho_do_arquivo(self):
+        texto = "C:/Users/Manutencao.sm/Desktop/VIDEOS TESTE/2006_BDC_BO PETS CINOMOSE_.MXF"
+        expected = "C:/Users/Manutencao.sm/Desktop/VIDEOS TESTE"
+
+        self.assertEqual(expected, Helper.pegar_caminho_do_arquivo(texto))
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

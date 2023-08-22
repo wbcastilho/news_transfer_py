@@ -46,3 +46,10 @@ class Helper:
                 )
             )
         )
+
+    @staticmethod
+    def pegar_caminho_do_arquivo(texto: str) -> str:
+        arquivo = texto.split('/')
+        caminho_arquivo = arquivo[:-1]
+        result = "/".join(caminho_arquivo)
+        return result
